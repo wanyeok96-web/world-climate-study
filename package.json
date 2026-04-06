@@ -1,0 +1,7 @@
+{
+  "name": "world-climate-geoex",
+  "private": true,
+  "scripts": {
+    "embed-data": "node data/embed_climate_data.mjs"
+  }
+}

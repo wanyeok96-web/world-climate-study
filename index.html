@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>어나더 지오엑스 — 세계의 기후</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" crossorigin="" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app-loading" class="app-loading" role="status" aria-live="polite" aria-busy="true">데이터 로딩 중...</div>
+  <div class="app">
+    <header class="header">
+      <div class="title-section" aria-labelledby="brand-title">
+        <p class="title-section-tagline">당신의 지리학습을 도와줄, 또 하나의 지리 학습 도구</p>
+        <h1 id="brand-title" class="title-section-brand">어나더 지오엑스</h1>
+        <p class="title-section-series">세계의 기후</p>
+        <div class="title-section-emojis" role="group" aria-label="열대, 건조, 온대, 냉대, 한대 기후">
+          <span class="title-section-emoji" aria-hidden="true">🌴</span>
+          <span class="title-section-emoji" aria-hidden="true">🏜️</span>
+          <span class="title-section-emoji" aria-hidden="true">🌿</span>
+          <span class="title-section-emoji" aria-hidden="true">🌲</span>
+          <span class="title-section-emoji" aria-hidden="true">❄️</span>
+        </div>
+      </div>
+      <nav class="step-nav" aria-label="학습 단계">
+        <button type="button" class="step-pill is-active" data-step-target="1" aria-current="page">Step 1</button>
+        <button type="button" class="step-pill" data-step-target="2">Step 2</button>
+        <button type="button" class="step-pill" data-step-target="3">Step 3</button>
+        <button type="button" class="step-pill" data-step-target="4">Step 4</button>
+      </nav>
+    </header>
+
+    <main class="main">
+      <section id="panel-step1" class="step-panel is-visible" aria-labelledby="step1-heading">
+        <div class="step-hero">
+          <h2 id="step1-heading" class="section-title section-title--step">Step 1 · 세계의 기후 경관</h2>
+          <p class="section-lead section-lead--tight">쾨펜 기후 구분을 지도와 카드로 살펴봅니다. 아래 지도에서 색으로 구분된 기후대 분포를 확인한 뒤, 카드를 눌러 세부 내용을 열 수 있습니다.</p>
+        </div>
+
+        <div class="map-section">
+          <figure class="map-figure">
+            <img
+              class="map-image"
+              src="images/climate-zones-world.png"
+              width="1200"
+              height="600"
+              alt="적도선이 표시된 세계 지도. 열대·건조·온대·냉대·한대 등 색으로 구분된 기후대 분포를 보여 줍니다."
+              decoding="async"
+              fetchpriority="high"
+            />
+            <figcaption class="map-caption">색으로 구분된 기후대가 세계에서 어디에 분포하는지 살펴보세요</figcaption>
+          </figure>
+        </div>
+
+        <h3 class="cards-section-title">주요 기후대</h3>
+        <div class="card-grid" role="list">
+          <article class="climate-card" role="listitem" tabindex="0" data-climate="tropical">
+            <span class="climate-card-icon" aria-hidden="true">🌴</span>
+            <h3 class="climate-card-name">열대</h3>
+            <p class="climate-card-desc">적도 저기압대와 대류로 연중 고온. Af(우림)·Am(몬순)·Aw(사바나) 등 강수 패턴별로 경관이 갈립니다.</p>
+          </article>
+          <article class="climate-card" role="listitem" tabindex="0" data-climate="dry">
+            <span class="climate-card-icon" aria-hidden="true">🏜️</span>
+            <h3 class="climate-card-name">건조</h3>
+            <p class="climate-card-desc">증발이 강수를 넘는 환경입니다. BWh·BWk 사막과 BSh·BSk 스텝 등으로 나뉩니다.</p>
+          </article>
+          <article class="climate-card" role="listitem" tabindex="0" data-climate="temperate">
+            <span class="climate-card-icon" aria-hidden="true">🌿</span>
+            <h3 class="climate-card-name">온대</h3>
+            <p class="climate-card-desc">편서풍·전선과 해양·대륙의 차이로 사계가 분명합니다. Cfb·Cfa·Csa·Cwa 등 해양성·몬순·지중해형이 대표적입니다.</p>
+          </article>
+          <article class="climate-card" role="listitem" tabindex="0" data-climate="cold">
+            <span class="climate-card-icon" aria-hidden="true">🌲</span>
+            <h3 class="climate-card-name">냉대</h3>
+            <p class="climate-card-desc">최한월이 매우 낮고 적설·동토가 흔합니다. 침엽수림(타이가)이 넓고 Df·Dw 등으로 강수 계절이 갈립니다.</p>
+          </article>
+          <article class="climate-card" role="listitem" tabindex="0" data-climate="polar">
+            <span class="climate-card-icon" aria-hidden="true">❄️</span>
+            <h3 class="climate-card-name">한대</h3>
+            <p class="climate-card-desc">극고위도의 저온과 눈·얼음의 높은 반사율. ET(툰드라)·EF(빙설) 등 짧거나 없는 무설기가 특징입니다.</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="panel-step2" class="step-panel" hidden aria-labelledby="step2-heading">
+        <div class="step-hero">
+          <h2 id="step2-heading" class="section-title section-title--step">Step 2 · 쾨펜과 구분</h2>
+          <p class="section-lead section-lead--tight"><strong>쾨펜의 기후 구분</strong>으로 전체 그림을 잡고, 이어서 <strong>구분 기준</strong>을 익한 뒤 <strong>연습하기</strong>에서 그래프로 적용해 봅니다.</p>
+        </div>
+
+        <div class="step2-flow">
+          <section class="step2-sect ios-panel" aria-labelledby="step2-sect1-heading">
+            <h3 id="step2-sect1-heading" class="step2-sect-title">1. 쾨펜의 기후 구분</h3>
+            <div class="step2-sect1-body">
+              <ul class="step2-koppen-summary">
+                <li>독일의 기후학자 <strong>블라디미르 쾨펜</strong>은 <strong>식생</strong>과의 대응을 바탕으로 세계의 기후를 나누는 분류 체계를 정리했습니다.</li>
+                <li>기후 특성에 따라 <strong>수목 기후</strong>와 <strong>무수목 기후</strong> 등으로 크게 나눌 수 있습니다.</li>
+                <li><strong>기온</strong>과 <strong>강수</strong>의 패턴을 기준으로, 세계를 크게 <strong>다섯 가지(A~E)</strong> 기후대로 구분합니다.</li>
+              </ul>
+              <figure class="step2-koppen-figure">
+                <img
+                  class="step2-koppen-infographic"
+                  src="images/koppen-classification-overview.png"
+                  width="631"
+                  height="339"
+                  alt="쾨펜 기후 구분 인포그래픽. 쾨펜 초상, 세계 지도에 A~E 기후대, 다르에스살람 기후그래프와 1·2·3차 기후유형 칸이 함께 제시되어 있습니다."
+                  loading="lazy"
+                  decoding="async"
+                />
+                <figcaption class="step2-koppen-caption">쾨펜 기후 구분 개요(교육용 자료)</figcaption>
+              </figure>
+            </div>
+          </section>
+
+          <section class="step2-sect ios-panel step2-sect--criteria" aria-labelledby="step2-sect2-heading">
+            <h3 id="step2-sect2-heading" class="step2-sect-title">2. 구분 기준 이해하기</h3>
+            <p class="step2-criteria-source">어나더 세계지리 2단원 학습지(배포용) 2쪽 기준</p>
+            <div class="step2-criteria">
+              <p class="step2-criteria-lead">
+                쾨펜 기호는 <strong>1차</strong>·<strong>2차</strong>·<strong>3차</strong>로 나뉘며, 각 단계에서 보는 초점이 다릅니다.
+              </p>
+
+              <div class="step2-criteria-tiers">
+                <article class="step2-tier">
+                  <h4 class="step2-tier-title"><span class="step2-tier-badge">1차</span> 첫 번째 알파벳 (A~E, B)</h4>
+                  <p class="step2-tier-focus">‘기온’과 ‘강수량’ <strong>모두</strong>에 초점</p>
+                  <div class="step2-subblock">
+                    <h5 class="step2-subblock-title">최한월 평균기온</h5>
+                    <ul class="step2-criteria-ul">
+                      <li><strong>18℃ 이상</strong> → <span class="step2-code">A</span> (열대)</li>
+                      <li><strong>−3℃ ~ 18℃</strong> → <span class="step2-code">C</span> (온대)</li>
+                      <li><strong>−3℃ 미만</strong> → <span class="step2-code">D</span> (냉대) 쪽으로 판별 진행</li>
+                    </ul>
+                  </div>
+                  <div class="step2-subblock">
+                    <h5 class="step2-subblock-title">최난월 평균기온</h5>
+                    <ul class="step2-criteria-ul">
+                      <li><strong>10℃ 이상</strong> → <span class="step2-code">D</span> (냉대)</li>
+                      <li><strong>10℃ 미만</strong> → <span class="step2-code">E</span> (한대)</li>
+                    </ul>
+                    <ul class="step2-criteria-ul step2-criteria-ul--nest">
+                      <li>한대 <span class="step2-code">E</span> 세부: <strong>0℃ ~ 10℃</strong> → <span class="step2-code">ET</span>, <strong>0℃ 미만</strong> → <span class="step2-code">EF</span></li>
+                    </ul>
+                  </div>
+                  <div class="step2-subblock">
+                    <h5 class="step2-subblock-title">연 강수량</h5>
+                    <ul class="step2-criteria-ul">
+                      <li><strong>500mm 미만</strong> → <span class="step2-code">B</span> (건조)</li>
+                    </ul>
+                    <ul class="step2-criteria-ul step2-criteria-ul--nest">
+                      <li><strong>250mm ~ 500mm</strong> → <span class="step2-code">BS</span> (스텝)</li>
+                      <li><strong>250mm 미만</strong> → <span class="step2-code">BW</span> (사막)</li>
+                    </ul>
+                  </div>
+                </article>
+
+                <article class="step2-tier">
+                  <h4 class="step2-tier-title"><span class="step2-tier-badge">2차</span> 두 번째 알파벳</h4>
+                  <p class="step2-tier-focus">‘강수량’에 초점 — <strong>최건월 강수량</strong>과 건조 계절</p>
+                  <div class="step2-subblock">
+                    <h5 class="step2-subblock-title">습윤한 경우 (<span class="step2-code">f</span>)</h5>
+                    <p class="step2-subblock-note">최건월 강수량으로 판단</p>
+                    <ul class="step2-criteria-ul">
+                      <li><span class="step2-code">A</span> 기후: 최건월 <strong>60mm 이상</strong>이면 <span class="step2-code">f</span></li>
+                      <li><span class="step2-code">C</span> 기후: 최건월 <strong>30mm 이상</strong>이면 <span class="step2-code">f</span></li>
+                      <li><span class="step2-code">D</span> 기후: 최건월 <strong>20mm 이상</strong>이면 <span class="step2-code">f</span></li>
+                    </ul>
+                  </div>
+                  <div class="step2-subblock">
+                    <h5 class="step2-subblock-title">건조한 경우 (<span class="step2-code">s</span> · <span class="step2-code">w</span>)</h5>
+                    <p class="step2-subblock-note">위 기준으로 <span class="step2-code">f</span>를 붙일 수 없을 때</p>
+                    <ul class="step2-criteria-ul">
+                      <li>건조한 계절이 <strong>여름</strong> → <span class="step2-code">s</span></li>
+                      <li>건조한 계절이 <strong>겨울</strong> → <span class="step2-code">w</span></li>
+                    </ul>
+                  </div>
+                  <div class="step2-subblock">
+                    <h5 class="step2-subblock-title">특수</h5>
+                    <ul class="step2-criteria-ul">
+                      <li>계절풍의 영향 → <span class="step2-code">m</span></li>
+                      <li>고산 기후 지역 → <span class="step2-code">H</span></li>
+                    </ul>
+                  </div>
+                </article>
+
+                <article class="step2-tier">
+                  <h4 class="step2-tier-title"><span class="step2-tier-badge">3차</span> 세 번째 알파벳</h4>
+                  <p class="step2-tier-focus">‘기온’에 초점 — 주로 <strong>Cf</strong>(Cfa·Cfb)일 때만 실시</p>
+                  <div class="step2-subblock">
+                    <h5 class="step2-subblock-title">최난월 평균기온</h5>
+                    <ul class="step2-criteria-ul">
+                      <li><strong>22℃ 이상</strong> → <span class="step2-code">a</span></li>
+                      <li><strong>22℃ 미만</strong> → <span class="step2-code">b</span></li>
+                    </ul>
+                  </div>
+                </article>
+              </div>
+
+              <h4 class="step2-table-section-title">쾨펜의 기후 구분 기준 — 표로 정리</h4>
+              <div class="step2-table-scroll" tabindex="0">
+                <table class="step2-criteria-table">
+                  <caption class="visually-hidden">수목·무수목 기후별 1차 기준, 세부 유형, 2·3차 기호 요약</caption>
+                  <thead>
+                    <tr>
+                      <th scope="col">구분</th>
+                      <th scope="col">기후·기호</th>
+                      <th scope="col">1차(대분류) 기준</th>
+                      <th scope="col">세부 기후 유형</th>
+                      <th scope="col">2·3차 기호 요약</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <th scope="rowgroup" rowspan="3" class="step2-th-group">수목 기후</th>
+                      <th scope="row">열대 <span class="step2-code">A</span></th>
+                      <td>최한월 평균기온 <strong>18℃ 이상</strong></td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">Af</span> 열대 우림 기후</span>
+                        <span class="step2-symbol-line"><span class="step2-code">Am</span> 열대 몬순 기후</span>
+                        <span class="step2-symbol-line"><span class="step2-code">Aw</span> 열대 사바나 기후</span>
+                      </td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">f</span>: 연중 습윤</span>
+                        <span class="step2-symbol-line"><span class="step2-code">w</span>: 겨울 건조</span>
+                        <span class="step2-symbol-line"><span class="step2-code">m</span>: 계절풍(몬순)</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">온대 <span class="step2-code">C</span></th>
+                      <td>최한월 평균기온 <strong>−3 ~ 18℃</strong></td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">Cfa</span> 온난 습윤 기후</span>
+                        <span class="step2-symbol-line"><span class="step2-code">Cfb</span> 서안 해양성 기후</span>
+                        <span class="step2-symbol-line"><span class="step2-code">Cs</span> 지중해성 기후</span>
+                        <span class="step2-symbol-line"><span class="step2-code">Cw</span> 온대 겨울 건조 기후</span>
+                      </td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">f</span>: 습윤</span>
+                        <span class="step2-symbol-line"><span class="step2-code">s</span>: 여름 건조</span>
+                        <span class="step2-symbol-line"><span class="step2-code">w</span>: 겨울 건조</span>
+                        <span class="step2-symbol-line"><span class="step2-code">a</span>: 최난월 22℃ 이상</span>
+                        <span class="step2-symbol-line"><span class="step2-code">b</span>: 최난월 22℃ 미만</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">냉대 <span class="step2-code">D</span></th>
+                      <td>최한월 <strong>−3℃ 미만</strong>, 최난월 <strong>10℃ 이상</strong></td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">Df</span> 냉대 습윤 기후</span>
+                        <span class="step2-symbol-line"><span class="step2-code">Dw</span> 냉대 겨울 건조 기후</span>
+                      </td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">f</span>: 습윤</span>
+                        <span class="step2-symbol-line"><span class="step2-code">w</span>: 겨울 건조</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                  <tbody>
+                    <tr>
+                      <th scope="rowgroup" rowspan="2" class="step2-th-group">무수목 기후</th>
+                      <th scope="row">한대 <span class="step2-code">E</span></th>
+                      <td>최난월 평균기온 <strong>10℃ 미만</strong></td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">ET</span> 툰드라 기후</span>
+                        <span class="step2-symbol-line"><span class="step2-code">EF</span> 빙설 기후</span>
+                      </td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">ET</span>: 최난월 0~10℃</span>
+                        <span class="step2-symbol-line"><span class="step2-code">EF</span>: 최난월 0℃ 미만</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <th scope="row">건조 <span class="step2-code">B</span></th>
+                      <td>연 강수량 <strong>500mm 미만</strong></td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">BS</span> 스텝 기후</span>
+                        <span class="step2-symbol-line"><span class="step2-code">BW</span> 사막 기후</span>
+                      </td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">BS</span>: 연강수 250~500mm</span>
+                        <span class="step2-symbol-line"><span class="step2-code">BW</span>: 연강수 250mm 미만</span>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="step2-criteria-footnote">※ 교과서·자료에 따라 경계값·표기가 다를 수 있습니다. 본 앱 연습 문제는 그래프·선택지 맥락에 맞춰 풀이합니다.</p>
+            </div>
+          </section>
+
+          <section class="practice-section practice-quiz-card ios-panel" aria-labelledby="practice-heading">
+          <h3 id="practice-heading" class="practice-section-title">3. 연습하기</h3>
+          <p class="practice-section-lead">
+            <strong>표준 학습 6도시</strong>(싱가포르·다윈·런던·퍼스·서울·로마)를 <strong>이 순서대로</strong> 풀며 기후 판별의 기본형을 익힙니다. 아래 검색으로 <strong>다른 도시</strong>로 바꿔 볼 수도 있습니다.
+            그래프와 수치 입력을 참고한 뒤 <strong>질문에 답하고 정답을 확인</strong>해 보세요. (Step 3에서는 직접 조합합니다.)
+          </p>
+
+          <div class="practice-quiz-head">
+            <div class="practice-quiz-stepper" role="group" aria-label="문제 이동">
+              <button type="button" class="practice-quiz-arrow" id="practice-quiz-prev" aria-label="이전 문제">
+                <svg class="practice-quiz-arrow-icon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path fill="currentColor" d="M15.41 16.59L10.83 12l4.58-4.59L14 6l-6 6 6 6 1.41-1.41z" />
+                </svg>
+              </button>
+              <span class="practice-quiz-counter" id="practice-quiz-counter" aria-live="polite">문제 — / —</span>
+              <button type="button" class="practice-quiz-arrow" id="practice-quiz-next" aria-label="다음 문제">
+                <svg class="practice-quiz-arrow-icon" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                  <path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
+                </svg>
+              </button>
+            </div>
+            <h4 class="practice-quiz-city" id="practice-quiz-city">데이터 로딩 중...</h4>
+          </div>
+
+          <p class="practice-highland-hint accuracy-hint accuracy-hint--highland" id="practice-highland-hint" hidden></p>
+
+          <div class="practice-city-tools ios-panel ios-panel--nested" aria-label="연습 도시 선택 도구">
+            <label class="ios-label" for="practice-city-search">현재 문항을 다른 도시로 바꾸기 (전체 검색)</label>
+            <div class="practice-city-tools-row">
+              <input
+                type="text"
+                id="practice-city-search"
+                class="ios-input practice-city-search-input"
+                list="practice-city-datalist"
+                placeholder="도시명 입력 후 Enter (목록에서 선택 가능)"
+                autocomplete="off"
+              />
+              <datalist id="practice-city-datalist"></datalist>
+            </div>
+          </div>
+
+          <div class="practice-quiz-row">
+            <section class="practice-quiz-box practice-quiz-box--graph ios-panel" aria-labelledby="practice-box-graph-heading">
+              <h4 class="practice-quiz-box-heading" id="practice-box-graph-heading">기후그래프</h4>
+              <div class="practice-quiz-box-inner">
+                <div class="practice-chart-wrap">
+                  <canvas id="practiceQuizChart" aria-label="연습 문제 기후 그래프"></canvas>
+                </div>
+                <p class="practice-chart-legend-hint practice-chart-legend-hint--side">
+                  <span class="legend-dot legend-dot--temp"></span> 기온(°C) ·
+                  <span class="legend-dot legend-dot--rain"></span> 강수(mm) ·
+                  <span class="legend-dot legend-dot--guide"></span> 기준선(18° / 10° / -3°)
+                </p>
+              </div>
+            </section>
+            <div class="practice-quiz-analyze-type-pair">
+            <section class="practice-quiz-box practice-quiz-box--analyze ios-panel" aria-labelledby="practice-box-analyze-heading">
+              <h4 class="practice-quiz-box-heading" id="practice-box-analyze-heading">그래프분석</h4>
+              <div class="practice-quiz-box-inner practice-quiz-box-inner--analyze">
+              <div class="practice-grid">
+                <div class="field-group">
+                  <label class="ios-label" for="practice-t-coldest">최한월 평균기온 (°C)</label>
+                  <input type="number" id="practice-t-coldest" class="ios-input ios-input--wide" step="0.1" inputmode="decimal" placeholder="그래프에서 읽기" />
+                </div>
+                <div class="field-group">
+                  <label class="ios-label" for="practice-t-warmest">최난월 평균기온 (°C)</label>
+                  <input type="number" id="practice-t-warmest" class="ios-input ios-input--wide" step="0.1" inputmode="decimal" placeholder="그래프에서 읽기" />
+                </div>
+                <div class="field-group practice-field-annual">
+                  <span class="ios-label" id="practice-annual-label">연강수량 (mm)</span>
+                  <div class="practice-annual-accordion" id="practice-annual-accordion">
+                    <button
+                      type="button"
+                      class="practice-accordion-trigger"
+                      id="practice-annual-trigger"
+                      aria-expanded="false"
+                      aria-controls="practice-annual-panel"
+                      aria-describedby="practice-annual-label"
+                    >
+                      <span class="practice-accordion-trigger-text" id="practice-annual-trigger-text">구간선택하기</span>
+                      <span class="practice-accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="practice-accordion-panel" id="practice-annual-panel" role="region" aria-labelledby="practice-annual-label" hidden>
+                      <p class="practice-accordion-lead">그래프의 연간 강수 규모에 맞는 구간을 하나 고르세요.</p>
+                      <div class="practice-annual-options" role="radiogroup" aria-label="연강수량 구간">
+                        <button type="button" class="practice-annual-opt" role="radio" aria-checked="false" data-practice-annual="ge500" data-practice-mm="600">
+                          500 mm 이상
+                        </button>
+                        <button type="button" class="practice-annual-opt" role="radio" aria-checked="false" data-practice-annual="mid" data-practice-mm="375">
+                          250 mm 이상 ~ 500 mm 미만
+                        </button>
+                        <button type="button" class="practice-annual-opt" role="radio" aria-checked="false" data-practice-annual="low" data-practice-mm="120">
+                          0 ~ 250 mm 미만
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="hidden" id="practice-p-annual" name="practice-p-annual" value="" />
+                </div>
+                <div class="field-group">
+                  <label class="ios-label" for="practice-p-driest">최건월 강수량 (mm)</label>
+                  <input type="number" id="practice-p-driest" class="ios-input ios-input--wide" step="1" inputmode="numeric" placeholder="그래프에서 읽기" />
+                </div>
+              </div>
+              </div>
+            </section>
+            <section class="practice-quiz-box practice-quiz-box--type ios-panel" aria-labelledby="practice-box-type-heading">
+              <h4 class="practice-quiz-box-heading" id="practice-box-type-heading">유형판별</h4>
+              <div class="practice-quiz-box-inner practice-quiz-box-inner--type">
+              <div class="practice-quiz-questions">
+                <div class="practice-quiz-q">
+                  <p class="practice-quiz-qtext" id="practice-q1-label">Q1. 1차 구분 (기온·건조·한대·고산)</p>
+                  <div class="segmented-control segmented-control--practice-q1 segmented-control--q1-wide" id="practice-seg-q1" role="group" aria-labelledby="practice-q1-label">
+                    <button type="button" class="seg-btn" data-practice-q1="A" aria-pressed="false">A</button>
+                    <button type="button" class="seg-btn" data-practice-q1="B" aria-pressed="false">B</button>
+                    <button type="button" class="seg-btn" data-practice-q1="C" aria-pressed="false">C</button>
+                    <button type="button" class="seg-btn" data-practice-q1="D" aria-pressed="false">D</button>
+                    <button type="button" class="seg-btn" data-practice-q1="E" aria-pressed="false">E</button>
+                    <button type="button" class="seg-btn" data-practice-q1="H" aria-pressed="false">H</button>
+                  </div>
+                </div>
+                <div class="practice-quiz-q">
+                  <p class="practice-quiz-qtext" id="practice-q2-label">Q2. 2차 구분에 들어갈 기호는?</p>
+                  <div class="segmented-control segmented-control--practice-q2 seg-q2-oneline" id="practice-seg-q2" role="group" aria-labelledby="practice-q2-label">
+                    <button type="button" class="seg-btn" data-practice-q2="pass" aria-pressed="false">패스</button>
+                    <button type="button" class="seg-btn" data-practice-q2="f" aria-pressed="false">f</button>
+                    <button type="button" class="seg-btn" data-practice-q2="m" aria-pressed="false">m</button>
+                    <button type="button" class="seg-btn" data-practice-q2="w" aria-pressed="false">w</button>
+                    <button type="button" class="seg-btn" data-practice-q2="s" aria-pressed="false">s</button>
+                    <button type="button" class="seg-btn" data-practice-q2="T" aria-pressed="false">T</button>
+                    <button type="button" class="seg-btn" data-practice-q2="F" aria-pressed="false">F</button>
+                    <button type="button" class="seg-btn" data-practice-q2="S" aria-pressed="false">S</button>
+                    <button type="button" class="seg-btn" data-practice-q2="W" aria-pressed="false">W</button>
+                  </div>
+                </div>
+                <div class="practice-quiz-q" id="practice-q3-row">
+                  <p class="practice-quiz-qtext" id="practice-q3-label">Q3. 3차 구분 (Cfa·Cfb만 a/b)</p>
+                  <div class="segmented-control segmented-control--practice-q3" id="practice-seg-q3" role="group" aria-labelledby="practice-q3-label">
+                    <button type="button" class="seg-btn" data-practice-q3="pass" aria-pressed="false">패스</button>
+                    <button type="button" class="seg-btn" data-practice-q3="a" aria-pressed="false">a</button>
+                    <button type="button" class="seg-btn" data-practice-q3="b" aria-pressed="false">b</button>
+                  </div>
+                </div>
+              </div>
+              <div class="practice-answer-check" id="practice-answer-check" aria-live="polite">
+                <p class="practice-answer-check-title">정답 판정</p>
+                <div class="practice-answer-check-body" id="practice-answer-result">Q1~Q3을 모두 고르면 여기에 결과가 표시됩니다.</div>
+              </div>
+              </div>
+            </section>
+            </div>
+          </div>
+        </section>
+        </div>
+      </section>
+
+      <section id="panel-step3" class="step-panel" hidden aria-labelledby="step3-heading">
+        <div class="step-hero">
+          <h2 id="step3-heading" class="section-title section-title--step">Step 3 · 기후 그래프 분석</h2>
+          <p class="section-lead section-lead--tight"><strong>도시 선택</strong> 또는 <strong>지도의 점</strong>으로 관측 지점을 고른 뒤, <strong>기후그래프</strong>·<strong>그래프분석</strong>·<strong>유형판별</strong>로 읽어 정답을 확인합니다. <strong>1차 구분</strong>에는 <strong>고산(H)</strong>이 포함됩니다. <strong>3차 구분(a/b)</strong>은 <strong>Cfa·Cfb</strong>일 때만 하며, 그 외는 패스입니다. 기준 복습은 <a href="#" class="inline-step-link" data-goto-step="2">Step 2 연습하기</a>, 스피드 연습은 <a href="#" class="inline-step-link" data-goto-step="4">Step 4</a>입니다.</p>
+        </div>
+
+        <div class="step3-layout-grid">
+          <div class="step3-city-bar ios-panel">
+            <label class="ios-label" for="city-select">도시 선택</label>
+            <select id="city-select" class="ios-select"></select>
+          </div>
+
+          <div class="step3-grid-row step3-grid-row--chart-map">
+            <section class="practice-quiz-box practice-quiz-box--graph practice-quiz-box--step3-graph ios-panel" aria-labelledby="s3-box-graph-heading">
+              <h4 class="practice-quiz-box-heading" id="s3-box-graph-heading">기후그래프</h4>
+              <div class="practice-quiz-box-inner">
+                <div class="practice-chart-wrap">
+                  <canvas id="climateChart" aria-label="선택한 도시의 기온 곡선과 강수 막대 그래프"></canvas>
+                </div>
+                <p class="practice-chart-legend-hint practice-chart-legend-hint--side">
+                  <span class="legend-dot legend-dot--temp"></span> 기온(°C) ·
+                  <span class="legend-dot legend-dot--rain"></span> 강수(mm) ·
+                  <span class="legend-dot legend-dot--guide"></span> 기준선(기온 입력 시 18°·−3°·22°, 강수 입력 시 60·30·20mm) ·
+                  <span class="legend-dot legend-dot--user"></span> 초록 점 = 내가 읽은 기온
+                </p>
+              </div>
+            </section>
+            <section class="practice-quiz-box practice-quiz-box--map ios-panel" aria-labelledby="s3-box-map-heading">
+              <h4 class="practice-quiz-box-heading" id="s3-box-map-heading">지도에서 지점 확인</h4>
+              <div class="practice-quiz-box-inner">
+                <div id="step3-map" class="step3-map" role="presentation">
+                  <div
+                    id="step3-leaflet-map"
+                    class="step3-leaflet-map"
+                    role="application"
+                    aria-label="OpenStreetMap 타일 위에 도시 위치를 표시합니다. 마커를 누르면 해당 도시가 선택됩니다."
+                  ></div>
+                </div>
+                <ul class="step3-map-climate-legend" id="s3-map-climate-legend" aria-label="기후별 마커 색">
+                  <li><span class="step3-legend-swatch step3-legend-swatch--A"></span> 열대 Af·Am·Aw</li>
+                  <li><span class="step3-legend-swatch step3-legend-swatch--B"></span> 건조 BW·BS</li>
+                  <li><span class="step3-legend-swatch step3-legend-swatch--C"></span> 온대 C</li>
+                  <li><span class="step3-legend-swatch step3-legend-swatch--D"></span> 냉대 D</li>
+                  <li><span class="step3-legend-swatch step3-legend-swatch--E"></span> 한대 ET·EF</li>
+                  <li><span class="step3-legend-swatch step3-legend-swatch--H"></span> 고산 H</li>
+                </ul>
+                <p class="step3-map-legend" id="s3-map-legend">
+                  <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> 기반 지도입니다. 마커를 누르면 위의 도시 선택과 그래프가 바뀝니다. 선택한 지점은 파란색으로 강조됩니다.
+                </p>
+              </div>
+            </section>
+          </div>
+
+          <div class="step3-grid-row step3-grid-row--analyze">
+            <section class="ios-panel step3-panel-full" aria-labelledby="s3-box-analyze-heading">
+              <h4 class="practice-quiz-box-heading" id="s3-box-analyze-heading">그래프분석</h4>
+              <div class="step3-analyze-inline">
+                <div class="field-group step3-analyze-field">
+                  <label class="ios-label" for="s3-t-coldest">최한월 평균기온 (°C)</label>
+                  <input type="number" id="s3-t-coldest" class="ios-input ios-input--wide" step="0.1" inputmode="decimal" placeholder="그래프에서 읽기" />
+                </div>
+                <div class="field-group step3-analyze-field">
+                  <label class="ios-label" for="s3-t-warmest">최난월 평균기온 (°C)</label>
+                  <input type="number" id="s3-t-warmest" class="ios-input ios-input--wide" step="0.1" inputmode="decimal" placeholder="그래프에서 읽기" />
+                </div>
+                <div class="field-group practice-field-annual step3-analyze-field step3-analyze-field--annual">
+                  <span class="ios-label" id="s3-annual-label">연강수량 (mm)</span>
+                  <div class="practice-annual-accordion" id="s3-annual-accordion">
+                    <button type="button" class="practice-accordion-trigger" id="s3-annual-trigger" aria-expanded="false" aria-controls="s3-annual-panel" aria-describedby="s3-annual-label">
+                      <span class="practice-accordion-trigger-text" id="s3-annual-trigger-text">구간선택하기</span>
+                      <span class="practice-accordion-chevron" aria-hidden="true"></span>
+                    </button>
+                    <div class="practice-accordion-panel" id="s3-annual-panel" role="region" aria-labelledby="s3-annual-label" hidden>
+                      <p class="practice-accordion-lead">그래프의 연간 강수 규모에 맞는 구간을 하나 고르세요.</p>
+                      <div class="practice-annual-options" role="radiogroup" aria-label="연강수량 구간">
+                        <button type="button" class="practice-annual-opt" role="radio" aria-checked="false" data-s3-annual="ge500" data-s3-mm="600">500 mm 이상</button>
+                        <button type="button" class="practice-annual-opt" role="radio" aria-checked="false" data-s3-annual="mid" data-s3-mm="375">250 mm 이상 ~ 500 mm 미만</button>
+                        <button type="button" class="practice-annual-opt" role="radio" aria-checked="false" data-s3-annual="low" data-s3-mm="120">0 ~ 250 mm 미만</button>
+                      </div>
+                    </div>
+                  </div>
+                  <input type="hidden" id="s3-p-annual" name="s3-p-annual" value="" />
+                </div>
+                <div class="field-group step3-analyze-field">
+                  <label class="ios-label" for="s3-p-driest">최건월 강수량 (mm)</label>
+                  <input type="number" id="s3-p-driest" class="ios-input ios-input--wide" step="1" inputmode="numeric" placeholder="그래프에서 읽기" />
+                </div>
+              </div>
+              <p class="s3-accuracy-hint accuracy-hint" id="s3-accuracy-hint"></p>
+              <p class="s3-southern-hint accuracy-hint accuracy-hint--southern" id="s3-southern-hint" hidden></p>
+              <p class="s3-highland-hint accuracy-hint accuracy-hint--highland" id="s3-highland-hint" hidden></p>
+            </section>
+          </div>
+
+          <div class="step3-grid-row step3-grid-row--type">
+            <section class="ios-panel step3-panel-full" aria-labelledby="s3-box-type-heading">
+              <h4 class="practice-quiz-box-heading" id="s3-box-type-heading">유형판별</h4>
+              <div class="step3-type-inline">
+                <div class="step3-type-card practice-quiz-q ios-panel ios-panel--nested">
+                  <p class="practice-quiz-qtext" id="s3-q1-label">Q1. 1차 구분 (A~E·고산 H)</p>
+                  <div class="segmented-control segmented-control--practice-q1 segmented-control--q1-wide" id="s3-seg-q1" role="group" aria-labelledby="s3-q1-label">
+                    <button type="button" class="seg-btn" data-s3-q1="A" aria-pressed="false">A</button>
+                    <button type="button" class="seg-btn" data-s3-q1="B" aria-pressed="false">B</button>
+                    <button type="button" class="seg-btn" data-s3-q1="C" aria-pressed="false">C</button>
+                    <button type="button" class="seg-btn" data-s3-q1="D" aria-pressed="false">D</button>
+                    <button type="button" class="seg-btn" data-s3-q1="E" aria-pressed="false">E</button>
+                    <button type="button" class="seg-btn" data-s3-q1="H" aria-pressed="false">H</button>
+                  </div>
+                </div>
+                <div class="step3-type-card practice-quiz-q ios-panel ios-panel--nested">
+                  <p class="practice-quiz-qtext" id="s3-q2-label">Q2. 2차 구분</p>
+                  <div class="segmented-control segmented-control--practice-q2 seg-q2-oneline" id="s3-seg-q2" role="group" aria-labelledby="s3-q2-label">
+                    <button type="button" class="seg-btn" data-s3-q2="pass" aria-pressed="false">패스</button>
+                    <button type="button" class="seg-btn" data-s3-q2="f" aria-pressed="false">f</button>
+                    <button type="button" class="seg-btn" data-s3-q2="m" aria-pressed="false">m</button>
+                    <button type="button" class="seg-btn" data-s3-q2="w" aria-pressed="false">w</button>
+                    <button type="button" class="seg-btn" data-s3-q2="s" aria-pressed="false">s</button>
+                    <button type="button" class="seg-btn" data-s3-q2="T" aria-pressed="false">T</button>
+                    <button type="button" class="seg-btn" data-s3-q2="F" aria-pressed="false">F</button>
+                    <button type="button" class="seg-btn" data-s3-q2="S" aria-pressed="false">S</button>
+                    <button type="button" class="seg-btn" data-s3-q2="W" aria-pressed="false">W</button>
+                  </div>
+                </div>
+                <div class="step3-type-card practice-quiz-q ios-panel ios-panel--nested" id="s3-q3-card">
+                  <p class="practice-quiz-qtext" id="s3-q3-label">Q3. 3차 (Cfa·Cfb만 a/b)</p>
+                  <div class="segmented-control segmented-control--practice-q3" id="s3-seg-q3" role="group" aria-labelledby="s3-q3-label">
+                    <button type="button" class="seg-btn" data-s3-q3="pass" aria-pressed="false">패스</button>
+                    <button type="button" class="seg-btn" data-s3-q3="a" aria-pressed="false">a</button>
+                    <button type="button" class="seg-btn" data-s3-q3="b" aria-pressed="false">b</button>
+                  </div>
+                </div>
+              </div>
+              <div class="practice-answer-check step3-answer-check" id="s3-answer-check" aria-live="polite">
+                <p class="practice-answer-check-title">정답 판정</p>
+                <div class="practice-answer-check-body" id="s3-answer-result">Q1~Q3을 모두 고르면 여기에 결과가 표시됩니다.</div>
+              </div>
+            </section>
+          </div>
+
+          <div class="step3-grid-row step3-grid-row--explore">
+            <section class="ios-panel step3-panel-full" id="s3-explore-section" aria-labelledby="s3-explore-heading">
+              <h4 class="practice-quiz-box-heading" id="s3-explore-heading">기후지역 탐험하기</h4>
+              <p class="step3-explore-placeholder" id="s3-explore-placeholder">기후 유형을 판별해주세요.</p>
+              <div class="step3-explore-detail" id="s3-explore-detail" hidden>
+                <p class="step3-explore-cityline" id="s3-explore-cityline"></p>
+                <div class="step3-region-insight-grid">
+                  <div class="step3-region-block">
+                    <h5 class="step3-region-block-title">식생</h5>
+                    <p class="step3-region-block-body" id="s3-region-vegetation"></p>
+                  </div>
+                  <div class="step3-region-block">
+                    <h5 class="step3-region-block-title">주민생활</h5>
+                    <p class="step3-region-block-body" id="s3-region-life"></p>
+                  </div>
+                </div>
+              </div>
+            </section>
+          </div>
+
+          <div id="s3-report-card" class="s3-report-card" hidden role="status" aria-live="polite" aria-labelledby="s3-report-title">
+            <div class="s3-report-card__inner ios-panel">
+              <div class="s3-report-checkwrap" aria-hidden="true">
+                <span class="s3-report-check">✓</span>
+              </div>
+              <h4 id="s3-report-title" class="s3-report-title">나의 분석 리포트</h4>
+              <p id="s3-report-body" class="s3-report-body"></p>
+              <button type="button" class="ios-button ios-button--secondary s3-report-close" id="s3-report-close">닫기</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="panel-step4" class="step-panel" hidden aria-labelledby="step4-heading">
+        <div class="step-hero">
+          <h2 id="step4-heading" class="section-title section-title--step">Step 4 · 스피드 퀴즈</h2>
+          <p class="section-lead section-lead--tight">200초 안에 그래프만 보고 쾨펜 기호를 고릅니다. <strong>Am</strong>(몬순), <strong>H</strong>(고산) 단추가 포함되어 있습니다. 정답마다 점수가 오릅니다. 분석 연습은 <a href="#" class="inline-step-link" data-goto-step="3">Step 3</a>에서 다시 할 수 있어요.</p>
+        </div>
+
+        <div class="game-shell ios-panel">
+          <div class="game-hud">
+            <div class="game-hud-item">
+              <span class="game-hud-label">남은 시간</span>
+              <span class="game-hud-value" id="game-timer">200</span>
+              <span class="game-hud-unit">초</span>
+            </div>
+            <div class="game-hud-item">
+              <span class="game-hud-label">점수</span>
+              <span class="game-hud-value" id="game-score">0</span>
+            </div>
+          </div>
+
+          <div class="game-controls">
+            <button type="button" class="ios-button ios-button--accent" id="btn-game-start">게임 시작</button>
+            <button type="button" class="ios-button ios-button--secondary" id="btn-game-stop" disabled>종료</button>
+          </div>
+
+          <p class="game-status-msg" id="game-status-msg" aria-live="polite">시작을 누르면 타이머와 첫 문제가 나옵니다.</p>
+          <p class="game-highland-hint accuracy-hint accuracy-hint--highland" id="game-highland-hint" hidden></p>
+
+          <div class="game-stage" id="game-stage">
+            <div class="game-combo-layer" aria-hidden="true">
+              <span id="game-combo-flash" class="game-combo-flash">콤보!</span>
+            </div>
+            <div class="game-chart-area">
+              <canvas id="step4QuizChart" aria-label="퀴즈 기후 그래프"></canvas>
+            </div>
+            <div class="game-cards-grid" id="game-symbol-grid" role="group" aria-label="기후 기호 선택"></div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div id="wiz-toast" class="wiz-toast" hidden role="status" aria-live="polite"></div>
+
+  <div id="modal-root" class="modal-root" hidden aria-hidden="true">
+    <div class="modal-backdrop" data-modal-close></div>
+    <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+      <div class="modal-handle" aria-hidden="true"></div>
+      <button type="button" class="modal-close" data-modal-close aria-label="닫기">
+        <span aria-hidden="true">×</span>
+      </button>
+      <h2 id="modal-title" class="modal-title"></h2>
+      <div id="modal-body" class="modal-body"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <script src="data/climate_data_embedded.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
