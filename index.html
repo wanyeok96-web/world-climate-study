@@ -12,6 +12,16 @@
   <div id="app-loading" class="app-loading" role="status" aria-live="polite" aria-busy="true">데이터 로딩 중...</div>
   <div class="app">
     <header class="header">
+      <div class="copyright-header" aria-label="저작권 및 제작 정보">
+        <div class="copyright-header-inner">
+          <p class="copyright-header-line">
+            무단 배포·복제·상업적 이용 금지 | ⓒ 어나더 지오엑스(Geo-Ex) v.1.0
+          </p>
+          <p class="copyright-header-line">
+            제작: 경기 이솔고등학교 교사 이왕혁 | 문의: wanyeok96@gmail.com
+          </p>
+        </div>
+      </div>
       <div class="title-section" aria-labelledby="brand-title">
         <p class="title-section-tagline">당신의 지리학습을 도와줄, 또 하나의 지리 학습 도구</p>
         <h1 id="brand-title" class="title-section-brand">어나더 지오엑스</h1>
@@ -293,8 +303,8 @@
           <section class="practice-section practice-quiz-card ios-panel" aria-labelledby="practice-heading">
           <h3 id="practice-heading" class="practice-section-title">3. 연습하기</h3>
           <p class="practice-section-lead">
-            <strong>표준 학습 6도시</strong>(싱가포르·다윈·런던·퍼스·서울·로마)를 <strong>이 순서대로</strong> 풀며 기후 판별의 기본형을 익힙니다. 아래 검색으로 <strong>다른 도시</strong>로 바꿔 볼 수도 있습니다.
-            그래프와 수치 입력을 참고한 뒤 <strong>질문에 답하고 정답을 확인</strong>해 보세요. (Step 3에서는 직접 조합합니다.)
+            <strong>표준 학습 6도시</strong>(싱가포르·다윈·런던·퍼스·서울·로마)를 <strong>이 순서대로</strong> 풀며 기후 판별의 기본형을 익힙니다.
+            그래프·그래프분석 수치를 참고한 뒤, 아래 <strong>1·2·3차 구분 카드</strong>를 순서대로 확정하고 <strong>정답 확인하기</strong>로 자료 표기와 맞는지 검토해 보세요. (Step 3에서는 유사한 방식으로 직접 조합합니다.)
           </p>
 
           <div class="practice-quiz-head">
@@ -316,22 +326,7 @@
 
           <p class="practice-highland-hint accuracy-hint accuracy-hint--highland" id="practice-highland-hint" hidden></p>
 
-          <div class="practice-city-tools ios-panel ios-panel--nested" aria-label="연습 도시 선택 도구">
-            <label class="ios-label" for="practice-city-search">현재 문항을 다른 도시로 바꾸기 (전체 검색)</label>
-            <div class="practice-city-tools-row">
-              <input
-                type="text"
-                id="practice-city-search"
-                class="ios-input practice-city-search-input"
-                list="practice-city-datalist"
-                placeholder="도시명 입력 후 Enter (목록에서 선택 가능)"
-                autocomplete="off"
-              />
-              <datalist id="practice-city-datalist"></datalist>
-            </div>
-          </div>
-
-          <div class="practice-quiz-row">
+          <div class="practice-quiz-row practice-quiz-row--top">
             <section class="practice-quiz-box practice-quiz-box--graph ios-panel" aria-labelledby="practice-box-graph-heading">
               <h4 class="practice-quiz-box-heading" id="practice-box-graph-heading">기후그래프</h4>
               <div class="practice-quiz-box-inner">
@@ -341,11 +336,10 @@
                 <p class="practice-chart-legend-hint practice-chart-legend-hint--side">
                   <span class="legend-dot legend-dot--temp"></span> 기온(°C) ·
                   <span class="legend-dot legend-dot--rain"></span> 강수(mm) ·
-                  <span class="legend-dot legend-dot--guide"></span> 기준선(18° / 10° / -3°)
+                  <span class="legend-dot legend-dot--guide"></span> 기준선(18° / 10° / −3°)
                 </p>
               </div>
             </section>
-            <div class="practice-quiz-analyze-type-pair">
             <section class="practice-quiz-box practice-quiz-box--analyze ios-panel" aria-labelledby="practice-box-analyze-heading">
               <h4 class="practice-quiz-box-heading" id="practice-box-analyze-heading">그래프분석</h4>
               <div class="practice-quiz-box-inner practice-quiz-box-inner--analyze">
@@ -396,51 +390,67 @@
               </div>
               </div>
             </section>
-            <section class="practice-quiz-box practice-quiz-box--type ios-panel" aria-labelledby="practice-box-type-heading">
-              <h4 class="practice-quiz-box-heading" id="practice-box-type-heading">유형판별</h4>
-              <div class="practice-quiz-box-inner practice-quiz-box-inner--type">
-              <div class="practice-quiz-questions">
-                <div class="practice-quiz-q">
-                  <p class="practice-quiz-qtext" id="practice-q1-label">Q1. 1차 구분 (기온·건조·한대·고산)</p>
-                  <div class="segmented-control segmented-control--practice-q1 segmented-control--q1-wide" id="practice-seg-q1" role="group" aria-labelledby="practice-q1-label">
-                    <button type="button" class="seg-btn" data-practice-q1="A" aria-pressed="false">A</button>
-                    <button type="button" class="seg-btn" data-practice-q1="B" aria-pressed="false">B</button>
-                    <button type="button" class="seg-btn" data-practice-q1="C" aria-pressed="false">C</button>
-                    <button type="button" class="seg-btn" data-practice-q1="D" aria-pressed="false">D</button>
-                    <button type="button" class="seg-btn" data-practice-q1="E" aria-pressed="false">E</button>
-                    <button type="button" class="seg-btn" data-practice-q1="H" aria-pressed="false">H</button>
-                  </div>
-                </div>
-                <div class="practice-quiz-q">
-                  <p class="practice-quiz-qtext" id="practice-q2-label">Q2. 2차 구분에 들어갈 기호는?</p>
-                  <div class="segmented-control segmented-control--practice-q2 seg-q2-oneline" id="practice-seg-q2" role="group" aria-labelledby="practice-q2-label">
-                    <button type="button" class="seg-btn" data-practice-q2="pass" aria-pressed="false">패스</button>
-                    <button type="button" class="seg-btn" data-practice-q2="f" aria-pressed="false">f</button>
-                    <button type="button" class="seg-btn" data-practice-q2="m" aria-pressed="false">m</button>
-                    <button type="button" class="seg-btn" data-practice-q2="w" aria-pressed="false">w</button>
-                    <button type="button" class="seg-btn" data-practice-q2="s" aria-pressed="false">s</button>
-                    <button type="button" class="seg-btn" data-practice-q2="T" aria-pressed="false">T</button>
-                    <button type="button" class="seg-btn" data-practice-q2="F" aria-pressed="false">F</button>
-                    <button type="button" class="seg-btn" data-practice-q2="S" aria-pressed="false">S</button>
-                    <button type="button" class="seg-btn" data-practice-q2="W" aria-pressed="false">W</button>
-                  </div>
-                </div>
-                <div class="practice-quiz-q" id="practice-q3-row">
-                  <p class="practice-quiz-qtext" id="practice-q3-label">Q3. 3차 구분 (Cfa·Cfb만 a/b)</p>
-                  <div class="segmented-control segmented-control--practice-q3" id="practice-seg-q3" role="group" aria-labelledby="practice-q3-label">
-                    <button type="button" class="seg-btn" data-practice-q3="pass" aria-pressed="false">패스</button>
-                    <button type="button" class="seg-btn" data-practice-q3="a" aria-pressed="false">a</button>
-                    <button type="button" class="seg-btn" data-practice-q3="b" aria-pressed="false">b</button>
-                  </div>
-                </div>
+          </div>
+
+          <div class="practice-guide-grid" id="practice-guide-grid" aria-label="단계별 기후 구분 가이드">
+            <section class="practice-guide-card ios-panel" id="practice-guide-card-1" aria-labelledby="practice-guide-h1">
+              <h4 class="practice-guide-card-title" id="practice-guide-h1"><span class="practice-guide-hash" aria-hidden="true">##</span> 1차 구분</h4>
+              <ul class="practice-guide-criteria-list">
+                <li><strong>A</strong> · 최한월 평균기온 ≥ 18℃</li>
+                <li><strong>B</strong> · 연강수 &lt; 500mm (건조)</li>
+                <li><strong>C</strong> · 최한월 −3℃ 이상 ~ 18℃ 미만, 연강수 ≥ 500mm (온대)</li>
+                <li><strong>D</strong> · 최한월 &lt; −3℃ (냉대)</li>
+                <li><strong>E</strong> · 최난월(가장 따뜻한 달) 평균 &lt; 10℃ (한대)</li>
+                <li><strong>H</strong> · 고산 (자료에서 H로 제시된 지점)</li>
+              </ul>
+              <p class="practice-guide-criteria-note">※ 1차 판단 순서(자료 기준): 고산(H) 표기 → A → E → B → C → D</p>
+              <div class="practice-guide-chip-row" id="practice-guide-l1-chips" role="group" aria-label="1차 기호 선택">
+                <button type="button" class="practice-guide-chip" data-pg-l1="A">A</button>
+                <button type="button" class="practice-guide-chip" data-pg-l1="B">B</button>
+                <button type="button" class="practice-guide-chip" data-pg-l1="C">C</button>
+                <button type="button" class="practice-guide-chip" data-pg-l1="D">D</button>
+                <button type="button" class="practice-guide-chip" data-pg-l1="E">E</button>
+                <button type="button" class="practice-guide-chip" data-pg-l1="H">H</button>
               </div>
-              <div class="practice-answer-check" id="practice-answer-check" aria-live="polite">
-                <p class="practice-answer-check-title">정답 판정</p>
-                <div class="practice-answer-check-body" id="practice-answer-result">Q1~Q3을 모두 고르면 여기에 결과가 표시됩니다.</div>
-              </div>
-              </div>
+              <p class="practice-guide-hint" id="practice-guide-1-hint">기호를 고른 뒤 「1차 확정」을 누르세요.</p>
+              <div class="practice-guide-rationale" id="practice-guide-1-rationale" hidden></div>
+              <button type="button" class="ios-btn-primary practice-guide-step-btn" id="practice-guide-btn-1" disabled>1차 확정</button>
             </section>
+
+            <section class="practice-guide-card ios-panel practice-guide-card--waiting" id="practice-guide-card-2" aria-labelledby="practice-guide-h2">
+              <h4 class="practice-guide-card-title" id="practice-guide-h2"><span class="practice-guide-hash" aria-hidden="true">##</span> 2차 구분</h4>
+              <p class="practice-guide-gate-msg" id="practice-guide-2-gate">앞자리 알파벳을 판단한 이후 내용이 표시됩니다.</p>
+              <div id="practice-guide-2-body" class="practice-guide-step-body" hidden>
+                <p class="practice-guide-body-lead" id="practice-guide-2-lead"></p>
+                <div class="practice-guide-chip-row" id="practice-guide-l2-chips" role="group" aria-label="2차 기호 선택"></div>
+              </div>
+              <div class="practice-guide-rationale" id="practice-guide-2-rationale" hidden></div>
+              <button type="button" class="ios-btn-primary practice-guide-step-btn" id="practice-guide-btn-2" hidden disabled>2차 확정</button>
+            </section>
+
+            <section class="practice-guide-card ios-panel practice-guide-card--waiting" id="practice-guide-card-3" aria-labelledby="practice-guide-h3">
+              <h4 class="practice-guide-card-title" id="practice-guide-h3"><span class="practice-guide-hash" aria-hidden="true">##</span> 3차 구분</h4>
+              <p class="practice-guide-card-sub" id="practice-guide-3-sub">(Cf인 경우에만 판단합니다.)</p>
+              <p class="practice-guide-gate-msg" id="practice-guide-3-gate">앞자리 알파벳을 판단한 이후 내용이 표시됩니다.</p>
+              <div id="practice-guide-3-body" class="practice-guide-step-body" hidden>
+                <p class="practice-guide-body-lead" id="practice-guide-3-lead"></p>
+                <div class="practice-guide-chip-row" id="practice-guide-l3-chips" role="group" aria-label="3차 기호 선택"></div>
+              </div>
+              <div class="practice-guide-rationale" id="practice-guide-3-rationale" hidden></div>
+              <button type="button" class="ios-btn-primary practice-guide-step-btn" id="practice-guide-btn-3" hidden disabled>3차 확정</button>
+            </section>
+          </div>
+
+          <div class="practice-guide-footer ios-panel ios-panel--nested">
+            <div class="practice-guide-footer-actions">
+              <button type="button" class="ios-btn-primary practice-guide-verify-btn" id="practice-guide-verify-btn" disabled>정답 확인하기</button>
+              <button type="button" class="ios-btn-ghost practice-guide-reset-btn" id="practice-guide-reset-btn">단계 초기화</button>
             </div>
+            <p class="practice-guide-footer-hint" id="practice-guide-verify-hint">각 카드에서 순서대로 확정하면 검토 버튼이 활성화됩니다.</p>
+          </div>
+          <div class="practice-answer-check practice-guide-result-box" id="practice-guide-result-box" hidden aria-live="polite">
+            <p class="practice-answer-check-title">검토 결과</p>
+            <div class="practice-answer-check-body" id="practice-guide-verify-result"></div>
           </div>
         </section>
         </div>
