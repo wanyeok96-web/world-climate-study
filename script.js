@@ -180,49 +180,6 @@
     QUIZ_SYMBOLS = Object.keys(set).sort();
   }
 
-  function fillPracticeCityDatalist() {
-    var dl = document.getElementById("practice-city-datalist");
-    if (!dl) return;
-    dl.innerHTML = "";
-    CITY_DATA.forEach(function (c) {
-      var o = document.createElement("option");
-      o.value = c.nameKo + " · " + c.id;
-      dl.appendChild(o);
-    });
-  }
-
-  function practiceSearchValueToId(val) {
-    if (!val || !CITY_DATA.length) return null;
-    var s = val.trim();
-    var sep = " · ";
-    if (s.indexOf(sep) >= 0) {
-      var id = s.split(sep).pop().trim();
-      for (var i = 0; i < CITY_DATA.length; i++) {
-        if (CITY_DATA[i].id === id) return id;
-      }
-    }
-    for (var j = 0; j < CITY_DATA.length; j++) {
-      if (CITY_DATA[j].nameKo === s) return CITY_DATA[j].id;
-    }
-    return null;
-  }
-
-  function onPracticeCitySearchCommit() {
-    var el = document.getElementById("practice-city-search");
-    if (!el || !CITY_DATA.length) return;
-    var id = practiceSearchValueToId(el.value);
-    if (!id) return;
-    if (!PRACTICE_QUIZ_ITEMS.length) {
-      PRACTICE_QUIZ_ITEMS = [{ id: id }];
-      practiceQuizState.index = 0;
-    } else {
-      PRACTICE_QUIZ_ITEMS[practiceQuizState.index] = { id: id };
-    }
-    clearPracticeQuizInputs();
-    resetPracticeMcqUi();
-    syncPracticeQuizChrome();
-  }
-
   function refreshWizFinalSelectOptions() {
     var sel = document.getElementById("wiz-final-select");
     if (!sel) return;
@@ -244,7 +201,6 @@
     CITY_DATA = parseCsvToCityData(text);
     buildStandardPracticeQuizItems();
     rebuildQuizSymbolsFromCities();
-    fillPracticeCityDatalist();
     refreshWizFinalSelectOptions();
     var grid = document.getElementById("game-symbol-grid");
     if (grid) {
@@ -1301,9 +1257,7 @@
     practiceQuizMcq.q1 = null;
     practiceQuizMcq.q2 = null;
     practiceQuizMcq.q3 = null;
-    setSegGroup(document.getElementById("practice-seg-q1"), "data-practice-q1", null);
-    setSegGroup(document.getElementById("practice-seg-q2"), "data-practice-q2", null);
-    setSegGroup(document.getElementById("practice-seg-q3"), "data-practice-q3", null);
+    resetPracticeGuideBoard();
     syncPracticeMcqGates();
   }
 
@@ -1347,6 +1301,7 @@
       if (prevBtn) prevBtn.disabled = true;
       if (nextBtn) nextBtn.disabled = true;
       destroyPracticeChart();
+      refreshPracticeGuideForCity(null);
       return;
     }
     if (idx >= n) practiceQuizState.index = idx = n - 1;
@@ -1355,6 +1310,7 @@
     if (!city) {
       if (cityEl) cityEl.textContent = "도시를 찾을 수 없습니다.";
       destroyPracticeChart();
+      refreshPracticeGuideForCity(null);
       return;
     }
 
@@ -1367,6 +1323,7 @@
     resetPracticeMcqUi();
     updatePracticeQuizChart(city);
     updatePracticeHighlandHint(city);
+    refreshPracticeGuideForCity(city);
   }
 
   var ANNUAL_RANGE_LABELS = {
@@ -1525,8 +1482,604 @@
     return koppenCodeToMcqAnswer(answerCodeForCity(city));
   }
 
+  /** Step 2 연습하기: 단계별 가이드 카드 상태 */
+  var practiceGuideState = {
+    L1: null,
+    L2: null,
+    L3: null,
+    locked1: false,
+    locked2: false,
+    locked3: false,
+  };
+
+  function getPracticeGuideCity() {
+    if (!PRACTICE_QUIZ_ITEMS.length) return null;
+    return getCityById(PRACTICE_QUIZ_ITEMS[practiceQuizState.index].id);
+  }
+
+  function fmtGuideTemp(x) {
+    var n = Number(x);
+    return (Math.round(n * 10) / 10).toFixed(1);
+  }
+
+  function practiceGuideMonthStats(city) {
+    var t = city.temp;
+    var p = city.precip;
+    var tMin = Math.min.apply(null, t);
+    var tMax = Math.max.apply(null, t);
+    var iMin = 0;
+    var iMax = 0;
+    var i;
+    for (i = 0; i < 12; i++) {
+      if (t[i] === tMin) iMin = i;
+      if (t[i] === tMax) iMax = i;
+    }
+    var pAnn = annualPrecipTotal(p);
+    var pMin = Math.min.apply(null, p);
+    var ipMin = 0;
+    for (i = 0; i < 12; i++) {
+      if (p[i] === pMin) ipMin = i;
+    }
+    return { tMin: tMin, tMax: tMax, iMin: iMin, iMax: iMax, pAnn: pAnn, pMin: pMin, ipMin: ipMin };
+  }
+
+  /** 교사용 가이드: 1차 판단 (H 표기 우선 → A → E → B → C → D) */
+  function teacherDeriveL1(city) {
+    var code = answerCodeForCity(city);
+    if (code === "H" || String(city.code || "").trim().toUpperCase() === "H") return "H";
+    var st = practiceGuideMonthStats(city);
+    if (st.tMin >= 18) return "A";
+    if (st.tMax < 10) return "E";
+    if (st.pAnn < 500) return "B";
+    if (st.tMin >= -3) return "C";
+    return "D";
+  }
+
+  function teacherFThresholdForL1(L1) {
+    if (L1 === "A") return 60;
+    if (L1 === "C") return 30;
+    if (L1 === "D") return 20;
+    return 0;
+  }
+
+  /** A·C·D 2차: f(최건월 기준) 또는 m/s/w (A는 m·w, C·D는 계절성) */
+  function teacherSecondLetterACD(city, L1) {
+    var st = practiceGuideMonthStats(city);
+    var th = teacherFThresholdForL1(L1);
+    if (st.pMin >= th) return "f";
+    if (L1 === "A") {
+      var amTh = 100 - st.pAnn / 25;
+      return st.pMin > amTh ? "m" : "w";
+    }
+    return cdSecondLetterFromSeasonality(city);
+  }
+
+  function practiceGuideFillRationale(el, lines) {
+    if (!el) return;
+    el.innerHTML = "";
+    el.hidden = false;
+    for (var i = 0; i < lines.length; i++) {
+      var p = document.createElement("p");
+      p.className = "practice-guide-rationale-line";
+      p.textContent = lines[i];
+      el.appendChild(p);
+    }
+  }
+
+  function practiceGuideSetL1ChipsDisabled(disabled) {
+    document.querySelectorAll("#practice-guide-l1-chips .practice-guide-chip").forEach(function (b) {
+      b.disabled = !!disabled;
+    });
+  }
+
+  function practiceGuideClearChipRow(container) {
+    if (!container) return;
+    container.innerHTML = "";
+  }
+
+  function practiceGuideAppendChip(container, label, val, attr, selectedVal) {
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "practice-guide-chip";
+    btn.textContent = label;
+    btn.setAttribute(attr, val);
+    if (selectedVal === val) btn.classList.add("is-selected");
+    container.appendChild(btn);
+  }
+
+  function practiceGuideSelectChip(container, attr, val) {
+    if (!container) return;
+    container.querySelectorAll(".practice-guide-chip").forEach(function (b) {
+      var on = b.getAttribute(attr) === val;
+      b.classList.toggle("is-selected", on);
+    });
+  }
+
+  function buildPracticeGuideRationale1(city, userL1) {
+    var st = practiceGuideMonthStats(city);
+    var exp = expectedKoppenMcqForCity(city);
+    var t1 = teacherDeriveL1(city);
+    var lines = [];
+    lines.push(
+      "【자료에서 읽은 값】 최한월 " +
+        MONTH_LABELS[st.iMin] +
+        " " +
+        fmtGuideTemp(st.tMin) +
+        "℃, 최난월(가장 따뜻한 달) " +
+        MONTH_LABELS[st.iMax] +
+        " " +
+        fmtGuideTemp(st.tMax) +
+        "℃, 연강수 약 " +
+        st.pAnn +
+        "mm, 최건월 " +
+        MONTH_LABELS[st.ipMin] +
+        " " +
+        Math.round(st.pMin) +
+        "mm."
+    );
+    if (exp && exp.q1 === "H") {
+      lines.push("이 지점은 교육 자료에서 고산 기후(H)로 제시됩니다. 해발·지형 요건을 함께 기억해 두세요.");
+    } else {
+      lines.push(
+        "판단 순서에 따르면: " +
+          (t1 === "A"
+            ? "최한월이 18℃ 이상이어서 열대(A) 성격입니다."
+            : t1 === "E"
+              ? "최난월 평균이 10℃ 미만이라 한대(E)에 해당합니다."
+              : t1 === "B"
+                ? "연강수가 500mm 미만이라 건조(B) 기후로 분류합니다."
+                : t1 === "C"
+                  ? "연강수가 500mm 이상이고 최한월이 −3℃ 이상~18℃ 미만이면 온대(C)입니다."
+                  : "최한월이 −3℃ 미만이면 냉대(D)입니다.")
+      );
+    }
+    if (exp && userL1 === exp.q1) {
+      lines.push("✓ 선택하신 1차 기호는 자료 표기와 같습니다.");
+    } else if (exp) {
+      lines.push("자료의 1차 기호는 「" + exp.q1 + "」입니다. 위 수치와 기준을 다시 대조해 보세요.");
+    }
+    return lines;
+  }
+
+  function buildPracticeGuideRationale2(city) {
+    var st = practiceGuideMonthStats(city);
+    var exp = expectedKoppenMcqForCity(city);
+    var lines = [];
+    if (!exp) return lines;
+    if (exp.q1 === "H") {
+      lines.push("고산(H)은 2차 기호 없이 바로 기호 H로 둡니다.");
+      return lines;
+    }
+    if (exp.q1 === "B") {
+      lines.push(
+        "B(건조) 2차: 연강수 " +
+          st.pAnn +
+          "mm — " +
+          (st.pAnn < 250
+            ? "250mm 미만이면 사막형 W"
+            : "250mm 이상 500mm 미만이면 스텝형 S") +
+          "."
+      );
+    } else if (exp.q1 === "E") {
+      lines.push(
+        "E(한대) 2차: 최난월(가장 따뜻한 달) " +
+          fmtGuideTemp(st.tMax) +
+          "℃ — " +
+          (st.tMax >= 0 ? "0℃ 이상 10℃ 미만이면 툰드라 T" : "0℃ 미만이면 빙설 F") +
+          "."
+      );
+    } else if (exp.q1 === "A" || exp.q1 === "C" || exp.q1 === "D") {
+      var th = teacherFThresholdForL1(exp.q1);
+      var derived = teacherSecondLetterACD(city, exp.q1);
+      if (st.pMin >= th) {
+        lines.push(
+          exp.q1 +
+            "권 습윤(f): 최건월 강수가 " +
+            Math.round(st.pMin) +
+            "mm로, 기준(" +
+            th +
+            "mm) 이상이면 f(연중 습윤)로 봅니다."
+        );
+      } else if (exp.q1 === "A") {
+        lines.push(
+          "열대에서 건기가 있으면: 몬순 임계 " +
+            (100 - st.pAnn / 25).toFixed(1) +
+            "mm와 비교해 m 또는 w를 고릅니다. (자료 표기 2차: " +
+            exp.q2 +
+            ")"
+        );
+      } else {
+        lines.push(
+          "최건월이 " +
+            th +
+            "mm 미만이면 여름·겨울 강수 차이로 s(여름건조)·w(겨울건조) 등을 판별합니다. (단계별 근사 결과: " +
+            derived +
+            ", 자료 표기: " +
+            exp.q2 +
+            ")"
+        );
+      }
+    }
+    if (exp.q2 === "pass") {
+      lines.push("이 경우 2차는 패스입니다.");
+    } else {
+      lines.push("자료에 따른 2차 기호: 「" + exp.q2 + "」.");
+    }
+    return lines;
+  }
+
+  function buildPracticeGuideRationale3(city) {
+    var st = practiceGuideMonthStats(city);
+    var exp = expectedKoppenMcqForCity(city);
+    var lines = [];
+    if (!exp || exp.q3 === "pass") {
+      lines.push("C의 f(습윤 온대)가 아니면 3차 a/b 구분은 없습니다.");
+      return lines;
+    }
+    lines.push(
+      "Cf의 3차: 최난월(가장 따뜻한 달) " +
+        fmtGuideTemp(st.tMax) +
+        "℃ — 22℃ 이상이면 a, 미만이면 b입니다."
+    );
+    lines.push("자료 표기 3차: 「" + exp.q3 + "」.");
+    return lines;
+  }
+
+  function practiceGuideSyncMcqFromState() {
+    practiceQuizMcq.q1 = practiceGuideState.L1;
+    practiceQuizMcq.q2 = practiceGuideState.L2;
+    practiceQuizMcq.q3 = practiceGuideState.L3;
+  }
+
+  function resetPracticeGuideBoard() {
+    practiceGuideState.L1 = null;
+    practiceGuideState.L2 = null;
+    practiceGuideState.L3 = null;
+    practiceGuideState.locked1 = false;
+    practiceGuideState.locked2 = false;
+    practiceGuideState.locked3 = false;
+
+    practiceGuideSetL1ChipsDisabled(false);
+    document.querySelectorAll("#practice-guide-l1-chips .practice-guide-chip").forEach(function (b) {
+      b.classList.remove("is-selected");
+    });
+
+    var r1 = document.getElementById("practice-guide-1-rationale");
+    var r2 = document.getElementById("practice-guide-2-rationale");
+    var r3 = document.getElementById("practice-guide-3-rationale");
+    if (r1) r1.hidden = true;
+    if (r2) r2.hidden = true;
+    if (r3) r3.hidden = true;
+
+    var gate2 = document.getElementById("practice-guide-2-gate");
+    var gate3 = document.getElementById("practice-guide-3-gate");
+    var body2 = document.getElementById("practice-guide-2-body");
+    var body3 = document.getElementById("practice-guide-3-body");
+    if (gate2) gate2.hidden = false;
+    if (gate3) gate3.hidden = false;
+    if (body2) body2.hidden = true;
+    if (body3) body3.hidden = true;
+
+    practiceGuideClearChipRow(document.getElementById("practice-guide-l2-chips"));
+    practiceGuideClearChipRow(document.getElementById("practice-guide-l3-chips"));
+
+    var c2 = document.getElementById("practice-guide-card-2");
+    var c3 = document.getElementById("practice-guide-card-3");
+    if (c2) {
+      c2.classList.add("practice-guide-card--waiting");
+      c2.classList.remove("is-unlocked");
+    }
+    if (c3) {
+      c3.classList.add("practice-guide-card--waiting");
+      c3.classList.remove("is-unlocked");
+    }
+
+    var b1 = document.getElementById("practice-guide-btn-1");
+    var b2 = document.getElementById("practice-guide-btn-2");
+    var b3 = document.getElementById("practice-guide-btn-3");
+    if (b1) b1.disabled = true;
+    if (b2) {
+      b2.hidden = true;
+      b2.disabled = true;
+    }
+    if (b3) {
+      b3.hidden = true;
+      b3.disabled = true;
+    }
+
+    var vb = document.getElementById("practice-guide-verify-btn");
+    if (vb) vb.disabled = true;
+    var rb = document.getElementById("practice-guide-result-box");
+    if (rb) rb.hidden = true;
+    var vr = document.getElementById("practice-guide-verify-result");
+    if (vr) vr.textContent = "";
+
+    var h1 = document.getElementById("practice-guide-1-hint");
+    if (h1) h1.textContent = "기호를 고른 뒤 「1차 확정」을 누르세요.";
+  }
+
+  function refreshPracticeGuideForCity(city) {
+    resetPracticeGuideBoard();
+    var h1 = document.getElementById("practice-guide-1-hint");
+    var grid = document.getElementById("practice-guide-grid");
+    if (!city) {
+      if (h1) h1.textContent = "도시 데이터가 없습니다.";
+      if (grid) grid.setAttribute("aria-busy", "true");
+      return;
+    }
+    if (grid) grid.removeAttribute("aria-busy");
+    if (h1) h1.textContent = "「" + city.nameKo + "」 월별 자료를 보고 1차 기호를 고른 뒤 확정하세요.";
+  }
+
+  function practiceGuideUnlockCard2(city) {
+    var gate = document.getElementById("practice-guide-2-gate");
+    var body = document.getElementById("practice-guide-2-body");
+    var lead = document.getElementById("practice-guide-2-lead");
+    var chips = document.getElementById("practice-guide-l2-chips");
+    var btn = document.getElementById("practice-guide-btn-2");
+    var card = document.getElementById("practice-guide-card-2");
+    if (gate) gate.hidden = true;
+    if (body) body.hidden = false;
+    if (card) {
+      card.classList.remove("practice-guide-card--waiting");
+      card.classList.add("is-unlocked");
+    }
+    practiceGuideClearChipRow(chips);
+    practiceGuideState.L2 = null;
+
+    var L1 = practiceGuideState.L1;
+    if (L1 === "H") {
+      if (lead) lead.textContent = "고산(H)은 2차 기호가 없습니다. 아래 버튼으로 이 단계를 마칩니다.";
+      if (btn) {
+        btn.hidden = false;
+        btn.disabled = false;
+      }
+      return;
+    }
+
+    if (lead) {
+      if (L1 === "B") {
+        lead.textContent =
+          "B(건조): 연강수로 구분합니다. S = 연강수 250~500mm(스텝), W = 250mm 미만(사막).";
+      } else if (L1 === "E") {
+        lead.textContent =
+          "E(한대): 최난월(가장 따뜻한 달) 평균기온으로 T(0~10℃)·F(0℃ 미만)를 고릅니다.";
+      } else {
+        lead.textContent =
+          "A·C·D: f = 최건월 강수가 기준 이상(습윤). A는 60mm, C는 30mm, D는 20mm 이상이면 f. 그 밖의 경우 m·s·w 중 해당하는 것을 고릅니다.";
+      }
+    }
+
+    if (L1 === "B") {
+      practiceGuideAppendChip(chips, "S (스텝)", "S", "data-pg-l2", null);
+      practiceGuideAppendChip(chips, "W (사막)", "W", "data-pg-l2", null);
+    } else if (L1 === "E") {
+      practiceGuideAppendChip(chips, "T (툰드라)", "T", "data-pg-l2", null);
+      practiceGuideAppendChip(chips, "F (빙설)", "F", "data-pg-l2", null);
+    } else if (L1 === "A" || L1 === "C" || L1 === "D") {
+      ["f", "m", "s", "w"].forEach(function (sym) {
+        practiceGuideAppendChip(chips, sym, sym, "data-pg-l2", null);
+      });
+    }
+
+    if (btn) {
+      btn.hidden = false;
+      btn.disabled = L1 !== "H";
+    }
+  }
+
+  function practiceGuideUnlockCard3() {
+    var gate = document.getElementById("practice-guide-3-gate");
+    var body = document.getElementById("practice-guide-3-body");
+    var lead = document.getElementById("practice-guide-3-lead");
+    var chips = document.getElementById("practice-guide-l3-chips");
+    var btn = document.getElementById("practice-guide-btn-3");
+    var card = document.getElementById("practice-guide-card-3");
+    if (gate) gate.hidden = true;
+    if (body) body.hidden = false;
+    if (card) {
+      card.classList.remove("practice-guide-card--waiting");
+      card.classList.add("is-unlocked");
+    }
+    practiceGuideClearChipRow(chips);
+    practiceGuideState.L3 = null;
+
+    var isCf = practiceGuideState.L1 === "C" && practiceGuideState.L2 === "f";
+    if (isCf) {
+      if (lead) lead.textContent = "습윤 온대 Cf: 최난월(가장 따뜻한 달) 22℃ 이상이면 a, 미만이면 b.";
+      practiceGuideAppendChip(chips, "a", "a", "data-pg-l3", null);
+      practiceGuideAppendChip(chips, "b", "b", "data-pg-l3", null);
+      if (btn) {
+        btn.textContent = "3차 확정";
+        btn.hidden = false;
+        btn.disabled = true;
+      }
+    } else {
+      if (lead)
+        lead.textContent =
+          "C의 f(습윤 온대)가 아니면 3차 구분은 없습니다. 아래 버튼으로 이 단계를 건너뜁니다.";
+      if (btn) {
+        btn.textContent = "3차 없음 · 확정";
+        btn.hidden = false;
+        btn.disabled = false;
+      }
+    }
+  }
+
+  function practiceGuideUpdateVerifyButton() {
+    var btn = document.getElementById("practice-guide-verify-btn");
+    if (!btn) return;
+    btn.disabled = !(practiceGuideState.locked1 && practiceGuideState.locked2 && practiceGuideState.locked3);
+  }
+
+  function practiceGuideRunVerify() {
+    var city = getPracticeGuideCity();
+    var out = document.getElementById("practice-guide-verify-result");
+    var box = document.getElementById("practice-guide-result-box");
+    if (!city || !out || !box) return;
+    var exp = expectedKoppenMcqForCity(city);
+    var code = answerCodeForCity(city);
+    if (!exp) {
+      out.textContent = "이 지점은 자동 채점 형식에 없습니다.";
+      box.hidden = false;
+      return;
+    }
+    var u1 = practiceGuideState.L1;
+    var u2 = practiceGuideState.L2;
+    var u3 = practiceGuideState.L3;
+    var ok = u1 === exp.q1 && u2 === exp.q2 && u3 === exp.q3;
+    var parts = [];
+    parts.push(
+      ok
+        ? "축하합니다. 선택하신 1·2·3차 조합이 자료 표기와 일치합니다."
+        : "선택과 자료 표기가 다릅니다. 각 카드의 근거 설명을 다시 읽어 보세요."
+    );
+    parts.push(
+      "자료의 쾨펜 기호: " +
+        code +
+        " (1차 " +
+        exp.q1 +
+        ", 2차 " +
+        exp.q2 +
+        ", 3차 " +
+        exp.q3 +
+        ")"
+    );
+    parts.push(
+      "나의 선택: 1차 " +
+        u1 +
+        ", 2차 " +
+        u2 +
+        ", 3차 " +
+        u3
+    );
+    out.textContent = parts.join("\n\n");
+    box.hidden = false;
+  }
+
+  function initPracticeGuideWizard() {
+    if (document.body.dataset.practiceGuideWired) return;
+    document.body.dataset.practiceGuideWired = "1";
+
+    var l1root = document.getElementById("practice-guide-l1-chips");
+    if (l1root) {
+      l1root.addEventListener("click", function (e) {
+        if (practiceGuideState.locked1) return;
+        var chip = e.target.closest(".practice-guide-chip[data-pg-l1]");
+        if (!chip || !l1root.contains(chip)) return;
+        var v = chip.getAttribute("data-pg-l1");
+        practiceGuideState.L1 = v;
+        practiceGuideSelectChip(l1root, "data-pg-l1", v);
+        var b1 = document.getElementById("practice-guide-btn-1");
+        if (b1) b1.disabled = false;
+      });
+    }
+
+    document.getElementById("practice-guide-btn-1") &&
+      document.getElementById("practice-guide-btn-1").addEventListener("click", function () {
+        if (practiceGuideState.locked1 || !practiceGuideState.L1) return;
+        var city = getPracticeGuideCity();
+        if (!city) return;
+        practiceGuideState.locked1 = true;
+        practiceGuideSetL1ChipsDisabled(true);
+        var b1 = document.getElementById("practice-guide-btn-1");
+        if (b1) b1.disabled = true;
+        practiceGuideFillRationale(
+          document.getElementById("practice-guide-1-rationale"),
+          buildPracticeGuideRationale1(city, practiceGuideState.L1)
+        );
+        practiceGuideUnlockCard2(city);
+      });
+
+    var l2root = document.getElementById("practice-guide-l2-chips");
+    if (l2root) {
+      l2root.addEventListener("click", function (e) {
+        if (practiceGuideState.locked2) return;
+        var chip = e.target.closest(".practice-guide-chip[data-pg-l2]");
+        if (!chip || !l2root.contains(chip)) return;
+        var v = chip.getAttribute("data-pg-l2");
+        practiceGuideState.L2 = v;
+        practiceGuideSelectChip(l2root, "data-pg-l2", v);
+        var b2 = document.getElementById("practice-guide-btn-2");
+        if (b2 && practiceGuideState.L1 !== "H") b2.disabled = false;
+      });
+    }
+
+    document.getElementById("practice-guide-btn-2") &&
+      document.getElementById("practice-guide-btn-2").addEventListener("click", function () {
+        if (practiceGuideState.locked2) return;
+        var L1 = practiceGuideState.L1;
+        if (L1 === "H") {
+          practiceGuideState.L2 = "pass";
+        } else if (!practiceGuideState.L2) {
+          return;
+        }
+        var city = getPracticeGuideCity();
+        if (!city) return;
+        practiceGuideState.locked2 = true;
+        var b2 = document.getElementById("practice-guide-btn-2");
+        if (b2) b2.disabled = true;
+        l2root &&
+          l2root.querySelectorAll(".practice-guide-chip").forEach(function (b) {
+            b.disabled = true;
+          });
+        practiceGuideFillRationale(
+          document.getElementById("practice-guide-2-rationale"),
+          buildPracticeGuideRationale2(city)
+        );
+        practiceGuideUnlockCard3();
+      });
+
+    var l3root = document.getElementById("practice-guide-l3-chips");
+    if (l3root) {
+      l3root.addEventListener("click", function (e) {
+        if (practiceGuideState.locked3) return;
+        var chip = e.target.closest(".practice-guide-chip[data-pg-l3]");
+        if (!chip || !l3root.contains(chip)) return;
+        var v = chip.getAttribute("data-pg-l3");
+        practiceGuideState.L3 = v;
+        practiceGuideSelectChip(l3root, "data-pg-l3", v);
+        var b3 = document.getElementById("practice-guide-btn-3");
+        if (b3) b3.disabled = false;
+      });
+    }
+
+    document.getElementById("practice-guide-btn-3") &&
+      document.getElementById("practice-guide-btn-3").addEventListener("click", function () {
+        if (practiceGuideState.locked3) return;
+        var isCf = practiceGuideState.L1 === "C" && practiceGuideState.L2 === "f";
+        if (isCf && !practiceGuideState.L3) return;
+        if (!isCf) practiceGuideState.L3 = "pass";
+        var city = getPracticeGuideCity();
+        if (!city) return;
+        practiceGuideState.locked3 = true;
+        var b3 = document.getElementById("practice-guide-btn-3");
+        if (b3) b3.disabled = true;
+        l3root &&
+          l3root.querySelectorAll(".practice-guide-chip").forEach(function (b) {
+            b.disabled = true;
+          });
+        practiceGuideFillRationale(
+          document.getElementById("practice-guide-3-rationale"),
+          buildPracticeGuideRationale3(city)
+        );
+        practiceGuideSyncMcqFromState();
+        practiceGuideUpdateVerifyButton();
+      });
+
+    document.getElementById("practice-guide-verify-btn") &&
+      document.getElementById("practice-guide-verify-btn").addEventListener("click", practiceGuideRunVerify);
+
+    document.getElementById("practice-guide-reset-btn") &&
+      document.getElementById("practice-guide-reset-btn").addEventListener("click", function () {
+        var city = getPracticeGuideCity();
+        refreshPracticeGuideForCity(city);
+      });
+  }
+
   function syncPracticeMcqGates() {
     var seg2 = document.getElementById("practice-seg-q2");
+    if (!seg2) return;
     if (!PRACTICE_QUIZ_ITEMS.length) {
       if (seg2) {
         seg2.querySelectorAll(".seg-btn").forEach(function (b) {
@@ -1600,7 +2153,6 @@
     var row = document.getElementById("practice-q3-row");
     var seg = document.getElementById("practice-seg-q3");
     if (!seg) {
-      updatePracticeAnswerCheck();
       return;
     }
     if (!PRACTICE_QUIZ_ITEMS.length) {
@@ -2246,30 +2798,9 @@
     if (prevBtn) prevBtn.addEventListener("click", function () { goPracticeQuiz(-1); });
     if (nextBtn) nextBtn.addEventListener("click", function () { goPracticeQuiz(1); });
 
-    bindSegGroup(document.getElementById("practice-seg-q1"), "data-practice-q1", function (v) {
-      practiceQuizMcq.q1 = v;
-      syncPracticeMcqGates();
-    });
-    bindSegGroup(document.getElementById("practice-seg-q2"), "data-practice-q2", function (v) {
-      practiceQuizMcq.q2 = v;
-      updatePracticeAnswerCheck();
-    });
-    bindSegGroup(document.getElementById("practice-seg-q3"), "data-practice-q3", function (v) {
-      practiceQuizMcq.q3 = v;
-      updatePracticeAnswerCheck();
-    });
+    initPracticeGuideWizard();
 
     initPracticeAnnualAccordion();
-
-    var searchIn = document.getElementById("practice-city-search");
-    if (searchIn) {
-      searchIn.addEventListener("keydown", function (e) {
-        if (e.key === "Enter") {
-          e.preventDefault();
-          onPracticeCitySearchCommit();
-        }
-      });
-    }
   }
 
   function setSegGroup(container, dataAttr, selectedVal) {
