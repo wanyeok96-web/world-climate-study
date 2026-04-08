@@ -45,10 +45,10 @@
     { label: "Aw", matchCodes: ["Aw"] },
     { label: "BW", matchCodes: ["BWh", "BWk"] },
     { label: "BS", matchCodes: ["BSh", "BSk"] },
-    { label: "Cs", matchCodes: ["Csa", "Csb"] },
+    { label: "Cs", matchCodes: ["Cs", "Csa", "Csb"] },
     { label: "Cfb", matchCodes: ["Cfb"] },
     { label: "Cfa", matchCodes: ["Cfa"] },
-    { label: "Cw", matchCodes: ["Cwb", "Cwa"] },
+    { label: "Cw", matchCodes: ["Cw", "Cwb", "Cwa"] },
     { label: "Dw", matchCodes: ["Dwa", "Dwb", "Dwc", "Dwd"] },
     { label: "Df", matchCodes: ["Dfa", "Dfb", "Dfc", "Dfd"] },
     { label: "ET", matchCodes: ["ET"] },
@@ -160,8 +160,13 @@
         temp.push(tv);
         precip.push(pv);
       }
-      var mapLat = idx.lat !== undefined ? csvNum(row[idx.lat]) : NaN;
-      var mapLng = idx.lng !== undefined ? csvNum(row[idx.lng]) : NaN;
+      var latIdx = idx.lat !== undefined ? idx.lat : idx.latitude;
+      var lonIdx = idx.lng !== undefined ? idx.lng : idx.lon !== undefined ? idx.lon : idx.longitude;
+      var mapLat = latIdx !== undefined ? csvNum(row[latIdx]) : NaN;
+      var mapLng = lonIdx !== undefined ? csvNum(row[lonIdx]) : NaN;
+      if ((latIdx !== undefined || lonIdx !== undefined) && (isNaN(mapLat) || isNaN(mapLng))) {
+        console.error("[CSV 좌표 오류] 도시 좌표를 숫자로 읽지 못했습니다:", idRaw || id, row[latIdx], row[lonIdx]);
+      }
       byId[id] = {
         id: id,
         name: idRaw,
@@ -215,6 +220,17 @@
 
   function answerCodeForCity(city) {
     return normalizeKoppenCodeFromCity(city);
+  }
+
+  function displayCodeForCity(city) {
+    if (!city) return "";
+    var raw = String(city.code || "").trim();
+    var u = raw.toUpperCase();
+    if (u === "CS") return "Cs";
+    if (u === "CW") return "Cw";
+    if (u === "BS") return "BS";
+    if (u === "BW") return "BW";
+    return answerCodeForCity(city);
   }
 
   function rebuildQuizSymbolsFromCities() {
@@ -600,6 +616,15 @@
   var modalRoot = document.getElementById("modal-root");
   var modalTitle = document.getElementById("modal-title");
   var modalBody = document.getElementById("modal-body");
+  var step4ResultModal = document.getElementById("step4-result-modal");
+  var step4ResultView = document.getElementById("step4-result-view");
+  var step4WrongView = document.getElementById("step4-wrong-view");
+  var step4ResultTitle = document.getElementById("step4-result-title");
+  var step4ResultScore = document.getElementById("step4-result-score");
+  var step4ResultConfig = document.getElementById("step4-result-config");
+  var step4ResultImage = document.getElementById("step4-result-image");
+  var step4ResultMessage = document.getElementById("step4-result-message");
+  var step4WrongList = document.getElementById("step4-wrong-list");
   var stepButtons = document.querySelectorAll(".step-pill");
   var panels = {
     1: document.getElementById("panel-step1"),
@@ -619,10 +644,18 @@
     timerId: null,
     active: false,
     inputLocked: false,
+    configuredSeconds: 200,
+    configuredGoalScore: 50,
     timeLeft: 200,
     score: 0,
     lastCityIdx: -1,
     currentCityIndex: -1,
+    history: [],
+    historyCursor: -1,
+    roundsDone: 0,
+    maxRounds: 4,
+    awaitingNextAfterModal: false,
+    wrongAnswers: [],
   };
 
   function escapeHtml(s) {
@@ -805,8 +838,8 @@
 
   /** Step 3: Leaflet + OSM 타일 */
   var step3Leaflet = { map: null, markers: null };
-  /** 마커 클릭 시 이동할 줌(인근 국가·지역이 함께 보이는 정도, OSM 기준) */
-  var STEP3_MARKER_FOCUS_ZOOM = 6;
+  /** 마커 클릭 시 이동할 줌(초기/선택 시 공통) */
+  var STEP3_MARKER_FOCUS_ZOOM = 3;
 
   function invalidateStep3LeafletMap() {
     if (step3Leaflet.map) {
@@ -815,6 +848,15 @@
   }
 
   function syncStep3MapMarkers(selectedId) {
+    var selectedCity = getCityById(selectedId);
+    if (
+      step3Leaflet.map &&
+      selectedCity &&
+      typeof selectedCity.mapLat === "number" &&
+      typeof selectedCity.mapLng === "number"
+    ) {
+      step3Leaflet.map.setView([selectedCity.mapLat, selectedCity.mapLng], STEP3_MARKER_FOCUS_ZOOM, { animate: true });
+    }
     if (step3Leaflet.markers) {
       Object.keys(step3Leaflet.markers).forEach(function (id) {
         var m = step3Leaflet.markers[id];
@@ -847,16 +889,27 @@
       scrollWheelZoom: true,
       zoomControl: true,
       worldCopyJump: true,
+      minZoom: 0,
+      maxZoom: 12,
+      maxBounds: [
+        [-85, -180],
+        [85, 180],
+      ],
+      maxBoundsViscosity: 1.0,
     });
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
+      maxZoom: 12,
+      noWrap: true,
     }).addTo(map);
     step3Leaflet.map = map;
     var markers = {};
     var latLngs = [];
     CITY_DATA.forEach(function (c) {
-      if (typeof c.mapLat !== "number" || typeof c.mapLng !== "number") return;
+      if (typeof c.mapLat !== "number" || typeof c.mapLng !== "number") {
+        console.error("[지도 마커 생략] 좌표가 없거나 잘못된 도시:", c && c.id ? c.id : "(unknown)");
+        return;
+      }
       var ll = [c.mapLat, c.mapLng];
       latLngs.push(ll);
       var marker = L.circleMarker(ll, {
@@ -879,9 +932,9 @@
     });
     step3Leaflet.markers = markers;
     if (latLngs.length) {
-      map.fitBounds(L.latLngBounds(latLngs), { padding: [32, 32], maxZoom: 5 });
+      map.fitBounds(L.latLngBounds(latLngs), { padding: [32, 32], maxZoom: 3 });
     } else {
-      map.setView([20, 0], 2);
+      map.setView([20, 0], 0);
     }
   }
 
@@ -2540,15 +2593,6 @@
     var okC = Math.abs(userTc - a.coldest) <= WIZ_TEMP_TOL;
     var okW = Math.abs(userTw - a.warmest) <= WIZ_TEMP_TOL;
     var parts = [];
-    parts.push(
-      "도시 데이터 기준: 최한월 약 " +
-        a.coldest +
-        "°C, 최난월 약 " +
-        a.warmest +
-        "°C (허용 오차 ±" +
-        WIZ_TEMP_TOL +
-        "°C)."
-    );
     if (!isNaN(userTc) && !isNaN(userTw)) {
       if (okC && okW) {
         parts.push("입력값이 자료와 잘 맞습니다.");
@@ -2564,7 +2608,7 @@
     var tR = actualTempRange(city);
     var pAnn = sumPrecip(city.precip);
     var pMin = Math.min.apply(null, city.precip);
-    var canonical = answerCodeForCity(city);
+    var canonical = displayCodeForCity(city);
     var thrAm = 100 - pAnn / 25;
     if (userMcq.q1 !== exp.q1) {
       if (exp.q1 === "C" && userMcq.q1 === "D") {
@@ -2988,7 +3032,12 @@
     if (!CITY_DATA.length) return;
     sel.dataset.ready = "1";
     sel.innerHTML = "";
-    CITY_DATA.forEach(function (c) {
+    var sorted = CITY_DATA.slice().sort(function (a, b) {
+      var ak = String(a && a.nameKo ? a.nameKo : "");
+      var bk = String(b && b.nameKo ? b.nameKo : "");
+      return ak.localeCompare(bk, "ko-KR");
+    });
+    sorted.forEach(function (c) {
       var opt = document.createElement("option");
       opt.value = c.id;
       opt.textContent = c.nameKo;
@@ -3073,8 +3122,136 @@
   function updateGameHud() {
     var scoreEl = document.getElementById("game-score");
     var timeEl = document.getElementById("game-timer");
+    var goalEl = document.getElementById("game-goal-score");
     if (scoreEl) scoreEl.textContent = String(step4Game.score);
     if (timeEl) timeEl.textContent = String(step4Game.timeLeft);
+    if (goalEl) goalEl.textContent = String(step4Game.configuredGoalScore);
+  }
+
+  function updateStep4ControlState() {
+    var startBtn = document.getElementById("btn-game-start");
+    var prevBtn = document.getElementById("btn-game-prev");
+    var nextBtn = document.getElementById("btn-game-next");
+    var stopBtn = document.getElementById("btn-game-stop");
+    var timeUpBtn = document.getElementById("btn-game-time-up");
+    var timeDownBtn = document.getElementById("btn-game-time-down");
+    var goalUpBtn = document.getElementById("btn-game-goal-up");
+    var goalDownBtn = document.getElementById("btn-game-goal-down");
+    var minSeconds = 30;
+    var maxSeconds = 600;
+    var minGoal = 10;
+    var maxGoal = 300;
+
+    if (startBtn) startBtn.disabled = step4Game.active;
+    if (stopBtn) stopBtn.disabled = !step4Game.active;
+    if (prevBtn) prevBtn.disabled = !step4Game.active || step4Game.inputLocked || step4Game.historyCursor <= 0;
+    if (nextBtn) nextBtn.disabled = !step4Game.active || step4Game.inputLocked;
+
+    if (timeUpBtn) timeUpBtn.disabled = step4Game.active || step4Game.configuredSeconds >= maxSeconds;
+    if (timeDownBtn) timeDownBtn.disabled = step4Game.active || step4Game.configuredSeconds <= minSeconds;
+    if (goalUpBtn) goalUpBtn.disabled = step4Game.active || step4Game.configuredGoalScore >= maxGoal;
+    if (goalDownBtn) goalDownBtn.disabled = step4Game.active || step4Game.configuredGoalScore <= minGoal;
+  }
+
+  function adjustStep4ConfiguredTime(deltaSeconds) {
+    if (step4Game.active) return;
+    var minSeconds = 30;
+    var maxSeconds = 600;
+    var next = step4Game.configuredSeconds + deltaSeconds;
+    if (next < minSeconds) next = minSeconds;
+    if (next > maxSeconds) next = maxSeconds;
+    step4Game.configuredSeconds = next;
+    step4Game.timeLeft = next;
+    updateGameHud();
+    updateStep4ControlState();
+  }
+
+  function adjustStep4ConfiguredGoal(deltaScore) {
+    if (step4Game.active) return;
+    var minGoal = 10;
+    var maxGoal = 300;
+    var next = step4Game.configuredGoalScore + deltaScore;
+    if (next < minGoal) next = minGoal;
+    if (next > maxGoal) next = maxGoal;
+    step4Game.configuredGoalScore = next;
+    updateGameHud();
+    updateStep4ControlState();
+  }
+
+  function setStep4ResultModalView(view) {
+    if (step4ResultView) step4ResultView.hidden = view !== "result";
+    if (step4WrongView) step4WrongView.hidden = view !== "wrong";
+  }
+
+  function sumArr(arr) {
+    var s = 0;
+    for (var i = 0; i < arr.length; i++) s += arr[i];
+    return s;
+  }
+
+  function recordStep4WrongAnswer(city, selectedCode, correctCode) {
+    if (!city) return;
+    var coldest = Math.min.apply(null, city.temp);
+    var warmest = Math.max.apply(null, city.temp);
+    var annualPrecip = sumArr(city.precip);
+    step4Game.wrongAnswers.push({
+      cityKo: city.nameKo || city.name || "-",
+      selected: selectedCode || "-",
+      correct: correctCode || "-",
+      coldest: coldest,
+      warmest: warmest,
+      annualPrecip: annualPrecip,
+    });
+  }
+
+  function renderStep4WrongAnswerList() {
+    if (!step4WrongList) return;
+    if (!step4Game.wrongAnswers.length) {
+      step4WrongList.innerHTML = '<p class="step4-wrong-item-meta">아직 오답이 없습니다. 계속 도전해보세요!</p>';
+      return;
+    }
+    var html = [];
+    for (var i = 0; i < step4Game.wrongAnswers.length; i++) {
+      var w = step4Game.wrongAnswers[i];
+      html.push(
+        '<article class="step4-wrong-item">' +
+          '<p class="step4-wrong-item-title">' + escapeHtml(String(i + 1)) + ". " + escapeHtml(w.cityKo) + "</p>" +
+          '<p class="step4-wrong-item-meta">내 선택: <strong>' + escapeHtml(w.selected) + "</strong> / 정답: <strong>" + escapeHtml(w.correct) + "</strong></p>" +
+          '<p class="step4-wrong-item-meta">요약: 최한월 ' + escapeHtml(w.coldest.toFixed(1)) + "°C · 최난월 " + escapeHtml(w.warmest.toFixed(1)) + "°C · 연강수량 " + escapeHtml(String(Math.round(w.annualPrecip))) + "mm</p>" +
+        "</article>"
+      );
+    }
+    step4WrongList.innerHTML = html.join("");
+  }
+
+  function closeStep4ResultModal() {
+    if (!step4ResultModal) return;
+    step4ResultModal.hidden = true;
+    step4ResultModal.setAttribute("aria-hidden", "true");
+    document.body.style.overflow = "";
+    setStep4ResultModalView("result");
+  }
+
+  function openStep4ResultModal(score, roundNo) {
+    if (!step4ResultModal || !step4ResultScore || !step4ResultImage || !step4ResultMessage) return;
+    var ok = score >= step4Game.configuredGoalScore;
+    if (step4ResultTitle) {
+      step4ResultTitle.textContent = roundNo ? String(roundNo) + "세트 종료" : "최종 결과";
+    }
+    step4ResultScore.textContent = "당신의 최종 점수는 " + score + "점입니다!";
+    if (step4ResultConfig) {
+      step4ResultConfig.textContent =
+        "설정 시간: " + step4Game.configuredSeconds + "초 · 설정 목표 점수: " + step4Game.configuredGoalScore + "점";
+    }
+    step4ResultImage.src = ok ? "images/step4-success.png" : "images/step4-try-again.png";
+    step4ResultImage.alt = ok ? "성공 결과 이미지" : "재도전 결과 이미지";
+    step4ResultMessage.textContent = ok
+      ? "대단해요! 당신이 바로 주니어 쾨펜~!"
+      : "조금 더 노력해볼까요? 다시 도전해보세요!";
+    setStep4ResultModalView("result");
+    step4ResultModal.hidden = false;
+    step4ResultModal.setAttribute("aria-hidden", "false");
+    document.body.style.overflow = "hidden";
   }
 
   function setGameSymbolButtonsDisabled(disabled) {
@@ -3116,17 +3293,18 @@
     });
   }
 
-  function pickRandomGameQuestion() {
-    var n = CITY_DATA.length;
-    if (!n) return;
-    var idx;
-    var guard = 0;
-    do {
-      idx = Math.floor(Math.random() * n);
-      guard++;
-    } while (n > 1 && idx === step4Game.lastCityIdx && guard < 12);
+  function showStep4QuestionByCityIndex(idx, recordHistory) {
+    if (idx < 0 || idx >= CITY_DATA.length) return;
     step4Game.lastCityIdx = idx;
     step4Game.currentCityIndex = idx;
+    if (recordHistory) {
+      if (step4Game.historyCursor < step4Game.history.length - 1) {
+        step4Game.history = step4Game.history.slice(0, step4Game.historyCursor + 1);
+      }
+      step4Game.history.push(idx);
+      step4Game.historyCursor = step4Game.history.length - 1;
+    }
+    updateStep4ControlState();
     var city = CITY_DATA[idx];
     var canvas = document.getElementById("step4QuizChart");
     if (!canvas || typeof Chart === "undefined") return;
@@ -3138,12 +3316,25 @@
     updateGameHighlandHint(city);
   }
 
+  function pickRandomGameQuestion() {
+    var n = CITY_DATA.length;
+    if (!n) return;
+    var idx;
+    var guard = 0;
+    do {
+      idx = Math.floor(Math.random() * n);
+      guard++;
+    } while (n > 1 && idx === step4Game.lastCityIdx && guard < 12);
+    showStep4QuestionByCityIndex(idx, true);
+  }
+
   function onGameSymbolPick(sym) {
     if (!step4Game.active || step4Game.inputLocked || step4Game.currentCityIndex < 0) return;
     var city = CITY_DATA[step4Game.currentCityIndex];
     var ok = step4GuessMatchesCity(sym, answerCodeForCity(city));
     var stage = document.getElementById("game-stage");
     var msg = document.getElementById("game-status-msg");
+    step4Game.roundsDone += 1;
 
     if (ok) {
       var gain = 10;
@@ -3162,9 +3353,10 @@
       }
       pickRandomGameQuestion();
     } else {
+      recordStep4WrongAnswer(city, sym, displayCodeForCity(city));
       if (msg) {
         msg.textContent =
-          "오답 — 정답 기호는 " + answerCodeForCity(city) + " 입니다. 잠시 후 다음 문제로 넘어갑니다.";
+          "오답 — 정답 기호는 " + displayCodeForCity(city) + " 입니다. 잠시 후 다음 문제로 넘어갑니다.";
       }
       if (navigator.vibrate) {
         navigator.vibrate([16, 36, 14, 38, 18, 42, 22]);
@@ -3184,6 +3376,7 @@
       }
       step4Game.inputLocked = true;
       setGameSymbolButtonsDisabled(true);
+      updateStep4ControlState();
       window.setTimeout(function () {
         if (stage) stage.classList.remove("game-stage--shake-wrong");
         step4Game.inputLocked = false;
@@ -3191,9 +3384,38 @@
           setGameSymbolButtonsDisabled(false);
           pickRandomGameQuestion();
           if (msg) msg.textContent = "다음 문제입니다.";
+          updateStep4ControlState();
         }
       }, 1400);
     }
+  }
+
+  function goToNextStep4Question() {
+    if (!step4Game.active || step4Game.inputLocked) return;
+    pickRandomGameQuestion();
+    var msg = document.getElementById("game-status-msg");
+    if (msg) msg.textContent = "다음 문제입니다.";
+  }
+
+  function goToPrevStep4Question() {
+    if (!step4Game.active || step4Game.inputLocked) return;
+    if (step4Game.historyCursor <= 0) return;
+    step4Game.historyCursor -= 1;
+    var prevIdx = step4Game.history[step4Game.historyCursor];
+    showStep4QuestionByCityIndex(prevIdx, false);
+    var msg = document.getElementById("game-status-msg");
+    if (msg) msg.textContent = "이전 문제입니다.";
+  }
+
+  function openStep4WrongListView() {
+    renderStep4WrongAnswerList();
+    setStep4ResultModalView("wrong");
+  }
+
+  function restartStep4FromModal() {
+    step4Game.awaitingNextAfterModal = false;
+    closeStep4ResultModal();
+    startStep4Game();
   }
 
   function tickStep4Timer() {
@@ -3215,10 +3437,13 @@
 
     destroyGameChart();
     setGameSymbolButtonsDisabled(true);
-    var startBtn = document.getElementById("btn-game-start");
-    var stopBtn = document.getElementById("btn-game-stop");
-    if (startBtn) startBtn.disabled = false;
-    if (stopBtn) stopBtn.disabled = true;
+    step4Game.timeLeft = step4Game.configuredSeconds;
+    step4Game.history = [];
+    step4Game.historyCursor = -1;
+    step4Game.roundsDone = 0;
+    step4Game.awaitingNextAfterModal = false;
+    updateGameHud();
+    updateStep4ControlState();
 
     var msg = document.getElementById("game-status-msg");
     if (msg) {
@@ -3228,6 +3453,7 @@
         msg.textContent = "시간 종료! 최종 점수 " + step4Game.score + "점";
       }
     }
+    openStep4ResultModal(step4Game.score, null);
     clearGameHighlandHint();
   }
 
@@ -3240,10 +3466,15 @@
     step4Game.inputLocked = false;
     destroyGameChart();
     setGameSymbolButtonsDisabled(true);
-    var startBtn = document.getElementById("btn-game-start");
-    var stopBtn = document.getElementById("btn-game-stop");
-    if (startBtn) startBtn.disabled = false;
-    if (stopBtn) stopBtn.disabled = true;
+    step4Game.timeLeft = step4Game.configuredSeconds;
+    step4Game.history = [];
+    step4Game.historyCursor = -1;
+    step4Game.roundsDone = 0;
+    step4Game.awaitingNextAfterModal = false;
+    step4Game.wrongAnswers = [];
+    updateGameHud();
+    updateStep4ControlState();
+    closeStep4ResultModal();
     clearGameHighlandHint();
   }
 
@@ -3255,24 +3486,27 @@
       return;
     }
     buildGameSymbolGrid();
+    closeStep4ResultModal();
     step4Game.active = true;
     step4Game.inputLocked = false;
-    step4Game.timeLeft = 200;
+    step4Game.timeLeft = step4Game.configuredSeconds;
     step4Game.score = 0;
     step4Game.lastCityIdx = -1;
     step4Game.currentCityIndex = -1;
+    step4Game.history = [];
+    step4Game.historyCursor = -1;
+    step4Game.roundsDone = 0;
+    step4Game.awaitingNextAfterModal = false;
+    step4Game.wrongAnswers = [];
     updateGameHud();
 
-    var startBtn = document.getElementById("btn-game-start");
-    var stopBtn = document.getElementById("btn-game-stop");
-    if (startBtn) startBtn.disabled = true;
-    if (stopBtn) stopBtn.disabled = false;
+    updateStep4ControlState();
 
     setGameSymbolButtonsDisabled(false);
     pickRandomGameQuestion();
 
     var msg = document.getElementById("game-status-msg");
-    if (msg) msg.textContent = "200초 동안 최대한 많이 맞혀 보세요!";
+    if (msg) msg.textContent = step4Game.maxRounds + "세트 동안 최대한 많이 맞혀 보세요!";
 
     step4Game.timerId = setInterval(tickStep4Timer, 1000);
   }
@@ -3282,13 +3516,34 @@
     if (!document.body.dataset.step4Wired) {
       document.body.dataset.step4Wired = "1";
       var bs = document.getElementById("btn-game-start");
+      var bp = document.getElementById("btn-game-prev");
+      var bn = document.getElementById("btn-game-next");
       var bt = document.getElementById("btn-game-stop");
+      var btUp = document.getElementById("btn-game-time-up");
+      var btDown = document.getElementById("btn-game-time-down");
+      var bgUp = document.getElementById("btn-game-goal-up");
+      var bgDown = document.getElementById("btn-game-goal-down");
+      var reviewBtn = document.getElementById("btn-step4-review-wrong");
+      var restartBtn = document.getElementById("btn-step4-restart");
+      var modalCloseBtn = document.getElementById("btn-step4-modal-close");
       if (bs) bs.addEventListener("click", startStep4Game);
+      if (bp) bp.addEventListener("click", goToPrevStep4Question);
+      if (bn) bn.addEventListener("click", goToNextStep4Question);
       if (bt) bt.addEventListener("click", function () { endStep4Game("manual"); });
+      if (btUp) btUp.addEventListener("click", function () { adjustStep4ConfiguredTime(10); });
+      if (btDown) btDown.addEventListener("click", function () { adjustStep4ConfiguredTime(-10); });
+      if (bgUp) bgUp.addEventListener("click", function () { adjustStep4ConfiguredGoal(10); });
+      if (bgDown) bgDown.addEventListener("click", function () { adjustStep4ConfiguredGoal(-10); });
+      if (reviewBtn) reviewBtn.addEventListener("click", openStep4WrongListView);
+      if (restartBtn) restartBtn.addEventListener("click", restartStep4FromModal);
+      if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeStep4ResultModal);
     }
     if (!step4Game.active) {
       setGameSymbolButtonsDisabled(true);
     }
+    step4Game.timeLeft = step4Game.configuredSeconds;
+    updateGameHud();
+    updateStep4ControlState();
   }
 
   function setStep(n) {
@@ -3377,10 +3632,18 @@
       if (e.target.closest("[data-modal-close]")) closeModal();
     });
   }
+  if (step4ResultModal) {
+    step4ResultModal.addEventListener("click", function (e) {
+      if (e.target.classList && e.target.classList.contains("step4-result-backdrop")) {
+        closeStep4ResultModal();
+      }
+    });
+  }
 
   document.addEventListener("keydown", function (e) {
     if (e.key === "Escape") {
       if (modalRoot && !modalRoot.hidden) closeModal();
+      if (step4ResultModal && !step4ResultModal.hidden) closeStep4ResultModal();
     }
   });
 

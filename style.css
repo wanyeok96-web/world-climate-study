@@ -1301,9 +1301,13 @@ h3 {
   align-items: flex-start;
   gap: var(--space-sm);
   overflow-x: auto;
-  padding-bottom: 4px;
-  margin-bottom: var(--space-sm);
+  padding-bottom: 0;
+  margin-bottom: 0;
   -webkit-overflow-scrolling: touch;
+}
+
+.step3-analyze-inline .field-group {
+  margin-bottom: 0;
 }
 
 .step3-analyze-field {
@@ -2937,6 +2941,189 @@ h3 {
   font-weight: 600;
   color: var(--text-secondary);
   margin-left: 2px;
+}
+
+.game-time-adjust-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.game-time-adjust {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.game-time-btn {
+  width: 22px;
+  height: 16px;
+  line-height: 1;
+  padding: 0;
+  border: 1px solid var(--separator);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--text-secondary);
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.game-time-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.step4-result-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.step4-result-modal[hidden] {
+  display: none;
+}
+
+.step4-result-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.42);
+  backdrop-filter: blur(2px);
+}
+
+.step4-result-sheet {
+  position: relative;
+  width: min(520px, 100%);
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  background: #fff;
+  border: 1px solid var(--separator);
+  border-radius: 20px;
+  box-shadow: var(--shadow-modal);
+  padding: 18px 18px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+  animation: step4ResultPop 0.28s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.step4-result-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--separator);
+  border-radius: 999px;
+  background: #fff;
+  color: var(--text-secondary);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.step4-result-close:hover {
+  background: rgba(118, 118, 128, 0.12);
+}
+
+.step4-result-view,
+.step4-wrong-view {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.step4-result-title {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.step4-result-score {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.step4-result-image {
+  width: min(340px, 100%);
+  height: auto;
+  max-height: 280px;
+  object-fit: contain;
+  border-radius: 14px;
+}
+
+.step4-result-message {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.step4-result-actions {
+  margin-top: 4px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.step4-wrong-list {
+  width: 100%;
+  height: 300px;
+  overflow: auto;
+  border: 1px solid var(--separator);
+  border-radius: 12px;
+  background: rgba(118, 118, 128, 0.08);
+  padding: 10px;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+.step4-wrong-item {
+  padding: 10px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--separator);
+  margin-bottom: 8px;
+}
+
+.step4-wrong-item:last-child {
+  margin-bottom: 0;
+}
+
+.step4-wrong-item-title {
+  margin: 0 0 4px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.step4-wrong-item-meta {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+@keyframes step4ResultPop {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .game-controls {
