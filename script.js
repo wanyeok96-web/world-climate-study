@@ -3,7 +3,7 @@
 
   var MONTH_LABELS = ["1월", "2월", "3월", "4월", "5월", "6월", "7월", "8월", "9월", "10월", "11월", "12월"];
 
-  /** fetch(data/climate_data.csv) 파싱 후 채워짐 */
+  /** fetch(data/기후데이터.CSV) 파싱 후 채워짐 */
   var CITY_DATA = [];
 
   var DEFAULT_QUIZ_SYMBOLS = [
@@ -68,12 +68,59 @@
   var practiceChartInstance = null;
 
   var REGION_FALLBACK_VEG =
-    "교육용 기후 데이터(data/climate_data.csv)입니다. 그래프와 쾨펜 기호를 중심으로 식생을 연결해 읽어 보세요.";
+    "교육용 기후 데이터(data/기후데이터.CSV)입니다. 그래프와 쾨펜 기호를 중심으로 식생을 연결해 읽어 보세요.";
   var REGION_FALLBACK_LIFE =
     "기온·강수 패턴을 읽고 기후형과 주민생활(의식주)을 떠올리는 연습을 해 보세요.";
 
   function parseCsvLineSimple(line) {
-    return line.split(",");
+    var out = [];
+    var cur = "";
+    var inQuote = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line.charAt(i);
+      if (ch === '"') {
+        if (inQuote && line.charAt(i + 1) === '"') {
+          cur += '"';
+          i++;
+        } else {
+          inQuote = !inQuote;
+        }
+        continue;
+      }
+      if (ch === "," && !inQuote) {
+        out.push(cur);
+        cur = "";
+        continue;
+      }
+      cur += ch;
+    }
+    out.push(cur);
+    return out;
+  }
+
+  function cleanHeaderKey(s) {
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "")
+      .replace(/_/g, "");
+  }
+
+  function csvNum(v) {
+    var t = String(v == null ? "" : v)
+      .trim()
+      .replace(/,/g, "")
+      .replace(/\s+/g, "");
+    if (!t) return NaN;
+    return parseFloat(t);
+  }
+
+  function slugifyId(s) {
+    return String(s || "")
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "");
   }
 
   function parseCsvToCityData(text) {
@@ -89,8 +136,8 @@
       return h.trim();
     });
     var idx = {};
-    for (var hi = 0; hi < hdr.length; hi++) idx[hdr[hi]] = hi;
-    var need = ["id", "nameKo", "code", "lat", "lng"];
+    for (var hi = 0; hi < hdr.length; hi++) idx[cleanHeaderKey(hdr[hi])] = hi;
+    var need = ["city", "citykr", "type"];
     for (var ni = 0; ni < need.length; ni++) {
       if (idx[need[ni]] === undefined) throw new Error("missing col " + need[ni]);
     }
@@ -98,7 +145,8 @@
     for (var r = 1; r < rows.length; r++) {
       var row = rows[r];
       if (row.length < hdr.length) continue;
-      var id = row[idx.id].trim();
+      var idRaw = String(row[idx.city] || "").trim();
+      var id = slugifyId(idRaw) || idRaw || ("row_" + r);
       if (!id) continue;
       var temp = [];
       var precip = [];
@@ -106,21 +154,21 @@
         var tk = "t" + m;
         var pk = "p" + m;
         if (idx[tk] === undefined || idx[pk] === undefined) throw new Error("missing t/p");
-        var tv = parseFloat(String(row[idx[tk]]).trim());
-        var pv = parseFloat(String(row[idx[pk]]).trim());
+        var tv = csvNum(row[idx[tk]]);
+        var pv = csvNum(row[idx[pk]]);
         if (isNaN(tv) || isNaN(pv)) throw new Error("bad number " + id);
         temp.push(tv);
         precip.push(pv);
       }
-      var mapLat = parseFloat(String(row[idx.lat]).trim());
-      var mapLng = parseFloat(String(row[idx.lng]).trim());
-      if (isNaN(mapLat) || isNaN(mapLng)) throw new Error("bad latlng " + id);
+      var mapLat = idx.lat !== undefined ? csvNum(row[idx.lat]) : NaN;
+      var mapLng = idx.lng !== undefined ? csvNum(row[idx.lng]) : NaN;
       byId[id] = {
         id: id,
-        nameKo: row[idx.nameKo].trim(),
-        code: row[idx.code].trim(),
-        mapLat: mapLat,
-        mapLng: mapLng,
+        name: idRaw,
+        nameKo: String(row[idx.citykr] || "").trim() || idRaw,
+        code: String(row[idx.type] || "").trim(),
+        mapLat: isNaN(mapLat) ? null : mapLat,
+        mapLng: isNaN(mapLng) ? null : mapLng,
         temp: temp,
         precip: precip,
         regionVegetation: REGION_FALLBACK_VEG,
@@ -193,10 +241,7 @@
     sel.dataset.built = "1";
   }
 
-  /**
-   * CSV 텍스트를 파싱해 앱 상태를 채움 (fetch / 임베드 공통).
-   * data/climate_data_embedded.js 가 있으면 file:// 에서도 동작합니다.
-   */
+  /** CSV 텍스트를 파싱해 앱 상태를 채움. */
   function applyClimateCsvText(text) {
     CITY_DATA = parseCsvToCityData(text);
     buildStandardPracticeQuizItems();
@@ -212,9 +257,7 @@
       delete mapEl.dataset.leafletBuilt;
     }
     var sel3 = document.getElementById("city-select");
-    if (sel3) {
-      delete sel3.dataset.ready;
-    }
+    if (sel3) delete sel3.dataset.ready;
     var ld = document.getElementById("app-loading");
     if (ld) {
       ld.hidden = true;
@@ -223,6 +266,7 @@
       ld.setAttribute("aria-busy", "false");
     }
     document.body.classList.add("app-ready");
+    initStep3();
     syncPracticeQuizChrome();
     if (currentStep === "2") {
       requestAnimationFrame(function () {
@@ -236,8 +280,46 @@
     if (ld) {
       ld.classList.add("app-loading--error");
       ld.textContent =
-        "데이터를 불러오지 못했습니다. data/climate_data.csv·data/climate_data_embedded.js가 있는지(embed-data), 또는 로컬 서버(http://)로 여는지 확인하세요.";
+        "데이터를 불러오지 못했습니다. 기후데이터.CSV 파일 경로와 형식(City, City_KR, Type, T1~T12, P1~P12)을 확인하세요.";
     }
+  }
+
+  function decodeCsvBytes(buf) {
+    var bytes = new Uint8Array(buf);
+    function scoreHangul(s) {
+      var m = s.match(/[가-힣]/g);
+      return m ? m.length : 0;
+    }
+    function hasReplacementChar(s) {
+      return s.indexOf("\uFFFD") >= 0;
+    }
+
+    var utf8 = "";
+    try {
+      utf8 = new TextDecoder("utf-8", { fatal: false }).decode(bytes);
+    } catch (e) {
+      utf8 = "";
+    }
+
+    var euckr = "";
+    try {
+      euckr = new TextDecoder("euc-kr", { fatal: false }).decode(bytes);
+    } catch (e2) {
+      euckr = "";
+    }
+
+    var utfScore = scoreHangul(utf8) - (hasReplacementChar(utf8) ? 9999 : 0);
+    var krScore = scoreHangul(euckr) - (hasReplacementChar(euckr) ? 9999 : 0);
+    return krScore > utfScore ? euckr : utf8;
+  }
+
+  function fetchCsvText(url) {
+    return fetch(url, { cache: "no-store" }).then(function (res) {
+      if (!res.ok) throw new Error(String(res.status));
+      return res.arrayBuffer().then(function (buf) {
+        return decodeCsvBytes(buf);
+      });
+    });
   }
 
   function getEmbeddedClimateCsv() {
@@ -257,32 +339,28 @@
     }
   }
 
-  /**
-   * http(s): fetch 우선, 실패 시 임베드 폴백.
-   * file://: fetch 불가 → 임베드만 사용.
-   */
+  /** 메인 데이터 소스: data/기후데이터.CSV (fetch), 실패 시 임베드 폴백 */
   function loadClimateData() {
-    var isHttp = location.protocol === "http:" || location.protocol === "https:";
+    var candidates = ["data/기후데이터.CSV", "data/기후데이터.csv"];
+    var idx = 0;
 
-    if (!isHttp) {
-      return tryApplyEmbeddedCsv().catch(function () {
-        showClimateLoadError();
-      });
-    }
-
-    return fetch("data/climate_data.csv", { cache: "no-store" })
-      .then(function (res) {
-        if (!res.ok) throw new Error(String(res.status));
-        return res.text();
-      })
-      .then(function (text) {
-        applyClimateCsvText(text);
-      })
-      .catch(function () {
+    function tryFetchNext() {
+      if (idx >= candidates.length) {
         return tryApplyEmbeddedCsv().catch(function () {
           showClimateLoadError();
         });
-      });
+      }
+      var u = candidates[idx++];
+      return fetchCsvText(u)
+        .then(function (text) {
+          applyClimateCsvText(text);
+        })
+        .catch(function () {
+          return tryFetchNext();
+        });
+    }
+
+    return tryFetchNext();
   }
 
   var KOPPEN_SIDEBAR = {
@@ -2904,21 +2982,29 @@
     showWizardPanel(1);
   }
 
-  function initStep3() {
-    var sel = document.getElementById("city-select");
+  function initCitySelect(selectId, onChange) {
+    var sel = document.getElementById(selectId);
     if (!sel || sel.dataset.ready) return;
     if (!CITY_DATA.length) return;
     sel.dataset.ready = "1";
+    sel.innerHTML = "";
     CITY_DATA.forEach(function (c) {
       var opt = document.createElement("option");
       opt.value = c.id;
       opt.textContent = c.nameKo;
       sel.appendChild(opt);
     });
-    sel.addEventListener("change", function () {
+    sel.addEventListener("change", onChange);
+  }
+
+  function initStep3() {
+    initCitySelect("city-select", function (e) {
       resetStep3QuizPanel();
-      syncStep3MapMarkers(sel.value);
+      syncStep3MapMarkers(e.target.value);
+      refreshStep1AccuracyOnly();
     });
+    var sel = document.getElementById("city-select");
+    if (!sel) return;
     resetStep3QuizPanel();
 
     if (document.body.dataset.step3QuizWired) return;
