@@ -49,15 +49,15 @@
     { label: "Cfb", matchCodes: ["Cfb"] },
     { label: "Cfa", matchCodes: ["Cfa"] },
     { label: "Cw", matchCodes: ["Cw", "Cwb", "Cwa"] },
-    { label: "Dw", matchCodes: ["Dwa", "Dwb", "Dwc", "Dwd"] },
-    { label: "Df", matchCodes: ["Dfa", "Dfb", "Dfc", "Dfd"] },
+    { label: "Dw", matchCodes: ["Dw", "Dwa", "Dwb", "Dwc", "Dwd"] },
+    { label: "Df", matchCodes: ["Df", "Dfa", "Dfb", "Dfc", "Dfd"] },
     { label: "ET", matchCodes: ["ET"] },
     { label: "EF", matchCodes: ["EF"] },
     { label: "H", matchCodes: ["H"] },
   ];
 
   /** Step 2 연습하기: 표준 학습용 6도시 (순서 고정) */
-  var PRACTICE_MODEL_CITY_IDS = ["singapore", "darwin", "london", "perth", "seoul", "rome"];
+  var PRACTICE_MODEL_CITY_IDS = ["singapore", "yangon", "london", "perth", "seoul", "rome"];
 
   /** Step 2 연습하기 문항 (데이터 로드 후 buildStandardPracticeQuizItems로 채움) */
   var PRACTICE_QUIZ_ITEMS = [];
@@ -642,6 +642,8 @@
   var step1TropicalChartInstances = [];
   var step1DryChartInstances = [];
   var step1TemperateChartInstances = [];
+  var step1ColdChartInstances = [];
+  var step1PolarChartInstances = [];
   /** Step 3: 기온/최건월 입력 포커스 — 그래프 가이드 전환용 */
   var step3InputFocus = { temp: false, precip: false };
   var step3FocusSyncTimer = null;
@@ -800,6 +802,56 @@
         requestAnimationFrame(function () {
           initStep1TemperateCharts();
           step1TemperateChartInstances.forEach(function (ch) {
+            if (ch && typeof ch.resize === "function") ch.resize();
+          });
+        });
+      });
+      return;
+    }
+
+    if (key === "cold") {
+      var coldInfo = climateDetails.cold;
+      if (!coldInfo) return;
+      modalTitle.textContent = coldInfo.title;
+      modalBody.className = "modal-body modal-body--cold";
+      modalBody.innerHTML = "";
+      var tplCold = document.getElementById("modal-cold-template");
+      if (!tplCold || !tplCold.content) return;
+      modalBody.appendChild(tplCold.content.cloneNode(true));
+      modalRoot.hidden = false;
+      modalRoot.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      var closeBtnCold = modalRoot.querySelector(".modal-close");
+      if (closeBtnCold) closeBtnCold.focus();
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          initStep1ColdCharts();
+          step1ColdChartInstances.forEach(function (ch) {
+            if (ch && typeof ch.resize === "function") ch.resize();
+          });
+        });
+      });
+      return;
+    }
+
+    if (key === "polar") {
+      var polarInfo = climateDetails.polar;
+      if (!polarInfo) return;
+      modalTitle.textContent = polarInfo.title;
+      modalBody.className = "modal-body modal-body--polar";
+      modalBody.innerHTML = "";
+      var tplPolar = document.getElementById("modal-polar-template");
+      if (!tplPolar || !tplPolar.content) return;
+      modalBody.appendChild(tplPolar.content.cloneNode(true));
+      modalRoot.hidden = false;
+      modalRoot.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      var closeBtnPolar = modalRoot.querySelector(".modal-close");
+      if (closeBtnPolar) closeBtnPolar.focus();
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          initStep1PolarCharts();
+          step1PolarChartInstances.forEach(function (ch) {
             if (ch && typeof ch.resize === "function") ch.resize();
           });
         });
@@ -1363,7 +1415,7 @@
     if (typeof Chart === "undefined") return;
     var defs = [
       { id: "singapore", canvasId: "step1-chart-singapore" },
-      { id: "phuket", canvasId: "step1-chart-phuket" },
+      { id: "yangon", canvasId: "step1-chart-yangon" },
       { id: "darwin", canvasId: "step1-chart-darwin" },
     ];
     destroyStep1TropicalMiniCharts();
@@ -1454,10 +1506,82 @@
     });
   }
 
+  function destroyStep1ColdMiniCharts() {
+    step1ColdChartInstances.forEach(function (c) {
+      if (c) {
+        try {
+          c.destroy();
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    });
+    step1ColdChartInstances = [];
+  }
+
+  function initStep1ColdCharts() {
+    if (typeof Chart === "undefined") return;
+    var defs = [
+      { id: "moscow", canvasId: "step1-chart-moscow" },
+      { id: "vladivostok", canvasId: "step1-chart-vladivostok" },
+    ];
+    destroyStep1ColdMiniCharts();
+    defs.forEach(function (d) {
+      var canvas = document.getElementById(d.canvasId);
+      if (!canvas) return;
+      var city = getCityById(d.id);
+      if (!city) {
+        console.warn("[Step1 냉대 모달] CSV에 해당 도시가 없습니다:", d.id);
+        return;
+      }
+      var cfg = buildChartConfig(city, true, { guidelines: false });
+      cfg.options.plugins.legend.display = true;
+      cfg.options.plugins.title.display = false;
+      step1ColdChartInstances.push(new Chart(canvas.getContext("2d"), cfg));
+    });
+  }
+
+  function destroyStep1PolarMiniCharts() {
+    step1PolarChartInstances.forEach(function (c) {
+      if (c) {
+        try {
+          c.destroy();
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    });
+    step1PolarChartInstances = [];
+  }
+
+  function initStep1PolarCharts() {
+    if (typeof Chart === "undefined") return;
+    var defs = [
+      { id: "barrow", canvasId: "step1-chart-barrow" },
+      { id: "vostok", canvasId: "step1-chart-vostok" },
+    ];
+    destroyStep1PolarMiniCharts();
+    defs.forEach(function (d) {
+      var canvas = document.getElementById(d.canvasId);
+      if (!canvas) return;
+      var city = getCityById(d.id);
+      if (!city) {
+        console.warn("[Step1 한대 모달] CSV에 해당 도시가 없습니다:", d.id);
+        return;
+      }
+      var cfg = buildChartConfig(city, true, { guidelines: false });
+      cfg.options.plugins.legend.display = true;
+      cfg.options.plugins.title.display = false;
+      step1PolarChartInstances.push(new Chart(canvas.getContext("2d"), cfg));
+    });
+  }
+
   function destroyStep1FeatureModalCharts() {
     destroyStep1TropicalMiniCharts();
     destroyStep1DryMiniCharts();
     destroyStep1TemperateMiniCharts();
+    destroyStep1ColdMiniCharts();
+    destroyStep1PolarMiniCharts();
   }
 
   function destroyChart() {
@@ -3267,6 +3391,28 @@
     if (!sel) return;
     resetStep3QuizPanel();
 
+    var randBtn = document.getElementById("step3-random-city-btn");
+    if (randBtn && !randBtn.dataset.wired) {
+      randBtn.dataset.wired = "1";
+      randBtn.addEventListener("click", function () {
+        if (!CITY_DATA.length || !sel.options.length) return;
+        var ids = CITY_DATA.map(function (c) {
+          return c.id;
+        });
+        var current = sel.value;
+        var pick;
+        if (ids.length === 1) {
+          pick = ids[0];
+        } else {
+          do {
+            pick = ids[Math.floor(Math.random() * ids.length)];
+          } while (pick === current);
+        }
+        sel.value = pick;
+        sel.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+    }
+
     if (document.body.dataset.step3QuizWired) return;
     document.body.dataset.step3QuizWired = "1";
 
@@ -3815,6 +3961,12 @@
           if (ch && typeof ch.resize === "function") ch.resize();
         });
         step1TemperateChartInstances.forEach(function (ch) {
+          if (ch && typeof ch.resize === "function") ch.resize();
+        });
+        step1ColdChartInstances.forEach(function (ch) {
+          if (ch && typeof ch.resize === "function") ch.resize();
+        });
+        step1PolarChartInstances.forEach(function (ch) {
           if (ch && typeof ch.resize === "function") ch.resize();
         });
       });

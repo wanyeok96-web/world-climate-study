@@ -842,6 +842,310 @@ h3 {
   text-align: left;
 }
 
+/* Step 1 — 냉대 상세(모달, 포인트 #2D5A27) */
+.modal-body--cold {
+  padding-bottom: var(--space-md);
+}
+
+.modal-cold-content {
+  width: 100%;
+}
+
+.cold-feature-inner {
+  width: 100%;
+}
+
+.cold-feature-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  padding-left: var(--space-sm);
+  border-left: 4px solid #2d5a27;
+  text-align: left;
+}
+
+.cold-feature-icon {
+  font-size: 40px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.cold-feature-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.cold-feature-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.cold-feature-title-en {
+  font-size: 16px;
+  font-weight: 600;
+  color: #3d7a34;
+}
+
+.cold-feature-slogan {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.cold-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .cold-charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.cold-chart-cell {
+  min-width: 0;
+}
+
+.cold-chart-label {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1c1c1e;
+  text-align: center;
+}
+
+.cold-chart-wrap {
+  height: 220px;
+  width: 100%;
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(45, 90, 39, 0.45);
+  background: var(--bg-card);
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.cold-desc-block {
+  margin-bottom: var(--space-md);
+  text-align: left;
+}
+
+.cold-desc-line {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
+.cold-desc-line:last-child {
+  margin-bottom: 0;
+}
+
+.cold-desc-kicker {
+  color: #2d5a27;
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.cold-life-heading {
+  margin: 0 0 var(--space-sm);
+  font-size: 16px;
+  font-weight: 800;
+  color: #2d5a27;
+  text-align: left;
+}
+
+.cold-life-figure {
+  margin: 0;
+}
+
+.cold-life-img-wrap {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid rgba(45, 90, 39, 0.4);
+  background: rgba(45, 90, 39, 0.08);
+}
+
+.cold-life-img-wrap--photo {
+  line-height: 0;
+}
+
+.cold-life-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.cold-life-summary {
+  margin: var(--space-sm) 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+/* Step 1 — 한대 상세(모달, 포인트 #A1C4FD) */
+.modal-body--polar {
+  padding-bottom: var(--space-md);
+}
+
+.modal-polar-content {
+  width: 100%;
+}
+
+.polar-feature-inner {
+  width: 100%;
+}
+
+.polar-feature-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  padding-left: var(--space-sm);
+  border-left: 4px solid #a1c4fd;
+  text-align: left;
+}
+
+.polar-feature-icon {
+  font-size: 40px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.polar-feature-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.polar-feature-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.polar-feature-title-en {
+  font-size: 16px;
+  font-weight: 600;
+  color: #6b9ad9;
+}
+
+.polar-feature-slogan {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.polar-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .polar-charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.polar-chart-cell {
+  min-width: 0;
+}
+
+.polar-chart-label {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1c1c1e;
+  text-align: center;
+}
+
+.polar-chart-wrap {
+  height: 220px;
+  width: 100%;
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(161, 196, 253, 0.65);
+  background: var(--bg-card);
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.polar-desc-block {
+  margin-bottom: var(--space-md);
+  text-align: left;
+}
+
+.polar-desc-line {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
+.polar-desc-line:last-child {
+  margin-bottom: 0;
+}
+
+.polar-desc-kicker {
+  color: #5a8fd4;
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.polar-life-heading {
+  margin: 0 0 var(--space-sm);
+  font-size: 16px;
+  font-weight: 800;
+  color: #5a8fd4;
+  text-align: left;
+}
+
+.polar-life-figure {
+  margin: 0;
+}
+
+.polar-life-img-wrap {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid rgba(161, 196, 253, 0.55);
+  background: rgba(161, 196, 253, 0.15);
+}
+
+.polar-life-img-wrap--photo {
+  line-height: 0;
+}
+
+.polar-life-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.polar-life-summary {
+  margin: var(--space-sm) 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
 /* Modal */
 .modal-root {
   position: fixed;
@@ -1594,6 +1898,19 @@ h3 {
   text-align: center;
 }
 
+.climate-chart-source {
+  margin: var(--space-sm) 0 0;
+  font-size: 11px;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.45;
+}
+
+.climate-chart-source--step4 {
+  margin-top: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
 /* Step 3: 그리드 — (1) 기후그래프+지도 (2) 그래프분석 한 줄 (3) 유형판별 카드 한 줄 */
 .step3-layout-grid {
   display: flex;
@@ -1727,14 +2044,29 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-sm);
+  justify-content: space-between;
+  gap: var(--space-sm) var(--space-md);
   padding: var(--space-sm) var(--space-md) !important;
 }
 
-.step3-city-bar .ios-select {
-  flex: 1;
+.step3-city-bar-main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-sm);
+  flex: 1 1 auto;
+  min-width: min(100%, 200px);
+}
+
+.step3-city-bar .step3-city-bar-main .ios-select {
+  flex: 1 1 auto;
   min-width: min(100%, 220px);
   max-width: 360px;
+}
+
+.step3-random-city-btn {
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .step3-grid-row--chart-map {
@@ -3733,6 +4065,7 @@ h3 {
 .game-chart-area {
   position: relative;
   width: 100%;
+  max-width: min(720px, 100%);
   min-height: min(42vh, 340px);
   height: clamp(240px, 38vh, 400px);
   margin: 0 auto;
@@ -3796,7 +4129,7 @@ h3 {
   .game-chart-area {
     min-height: 380px;
     height: 400px;
-    max-width: 880px;
+    max-width: 720px;
     margin-left: auto;
     margin-right: auto;
   }

@@ -31,7 +31,7 @@
         <div class="title-section-emojis" role="group" aria-label="열대, 건조, 온대, 냉대, 한대 기후">
           <span class="title-section-emoji" aria-hidden="true">🌴</span>
           <span class="title-section-emoji" aria-hidden="true">🌵</span>
-          <span class="title-section-emoji" aria-hidden="true">🌿</span>
+          <span class="title-section-emoji" aria-hidden="true">🌤️</span>
           <span class="title-section-emoji" aria-hidden="true">🌲</span>
           <span class="title-section-emoji" aria-hidden="true">❄️</span>
         </div>
@@ -92,12 +92,16 @@
           <article class="climate-card" role="listitem" tabindex="0" data-climate="cold">
             <span class="climate-card-icon" aria-hidden="true">🌲</span>
             <h3 class="climate-card-name">냉대</h3>
-            <p class="climate-card-desc">최한월이 매우 낮고 적설·동토가 흔합니다. 침엽수림(타이가)이 넓고 Df·Dw 등으로 강수 계절이 갈립니다.</p>
+            <p class="climate-card-desc">
+              최한월이 매우 낮고 적설·동토가 흔합니다. 침엽수림(타이가)이 넓고 Df·Dw 등으로 강수 계절이 갈립니다. 카드를 누르면 모스크바·블라디보스토크 그래프와 인간 생활을 볼 수 있어요.
+            </p>
           </article>
           <article class="climate-card" role="listitem" tabindex="0" data-climate="polar">
             <span class="climate-card-icon" aria-hidden="true">❄️</span>
             <h3 class="climate-card-name">한대</h3>
-            <p class="climate-card-desc">극고위도의 저온과 눈·얼음의 높은 반사율. ET(툰드라)·EF(빙설) 등 짧거나 없는 무설기가 특징입니다.</p>
+            <p class="climate-card-desc">
+              극고위도의 저온과 눈·얼음의 높은 반사율. ET(툰드라)·EF(빙설) 등 짧거나 없는 무설기가 특징입니다. 카드를 누르면 배로·보스토크 그래프와 인간 생활을 볼 수 있어요.
+            </p>
           </article>
         </div>
       </section>
@@ -346,6 +350,7 @@
                   <span class="legend-dot legend-dot--rain"></span> 강수(mm) ·
                   <span class="legend-dot legend-dot--guide"></span> 기준선(18° / 10° / −3°)
                 </p>
+                <p class="climate-chart-source">출처: WMO Tokyo Climate Center</p>
               </div>
             </section>
             <section class="practice-quiz-box practice-quiz-box--analyze ios-panel" aria-labelledby="practice-box-analyze-heading">
@@ -472,8 +477,18 @@
 
         <div class="step3-layout-grid">
           <div class="step3-city-bar ios-panel">
-            <label class="ios-label" for="city-select">🏙️ 도시 선택</label>
-            <select id="city-select" class="ios-select"></select>
+            <div class="step3-city-bar-main">
+              <label class="ios-label" for="city-select">🏙️ 도시 선택</label>
+              <select id="city-select" class="ios-select"></select>
+            </div>
+            <button
+              type="button"
+              class="ios-button ios-button--secondary step3-random-city-btn"
+              id="step3-random-city-btn"
+              aria-label="목록에서 무작위로 다른 도시 선택"
+            >
+              다른 도시 보기
+            </button>
           </div>
 
           <div class="step3-grid-row step3-grid-row--chart-map">
@@ -513,6 +528,7 @@
                   <span class="legend-dot legend-dot--guide"></span> 기준선(기온 입력 시 18°·−3°·22°, 강수 입력 시 60·30·20mm) ·
                   <span class="legend-dot legend-dot--user"></span> 초록 점 = 내가 읽은 기온
                 </p>
+                <p class="climate-chart-source">출처: WMO Tokyo Climate Center</p>
               </div>
             </section>
           </div>
@@ -689,6 +705,7 @@
             <div class="game-chart-area">
               <canvas id="step4QuizChart" aria-label="퀴즈 기후 그래프"></canvas>
             </div>
+            <p class="climate-chart-source climate-chart-source--step4">출처: WMO Tokyo Climate Center</p>
             <div class="game-cards-grid" id="game-symbol-grid" role="group" aria-label="기후 기호 선택"></div>
           </div>
         </div>
@@ -732,9 +749,9 @@
           </div>
         </div>
         <div class="tropical-chart-cell">
-          <p class="tropical-chart-label">열대 몬순(푸껫)</p>
+          <p class="tropical-chart-label">열대 몬순(양곤)</p>
           <div class="tropical-chart-wrap">
-            <canvas id="step1-chart-phuket" width="280" height="220" aria-label="푸껫 월별 기온·강수 그래프"></canvas>
+            <canvas id="step1-chart-yangon" width="280" height="220" aria-label="양곤 월별 기온·강수 그래프"></canvas>
           </div>
         </div>
         <div class="tropical-chart-cell">
@@ -874,7 +891,7 @@
           </div>
         </div>
         <div class="temperate-chart-cell">
-          <p class="temperate-chart-label">온대 온윤(도쿄)</p>
+          <p class="temperate-chart-label">온난 습윤(도쿄)</p>
           <div class="temperate-chart-wrap">
             <canvas id="step1-chart-tokyo" width="280" height="220" aria-label="도쿄 월별 기온·강수 그래프"></canvas>
           </div>
@@ -908,6 +925,130 @@
           </div>
           <figcaption class="temperate-life-summary">
             사계에 맞는 단단한 집, 다양한 농작물과 과수, 가족이 함께하는 정원과 목축이 어우러진 온대 지역의 생활 모습입니다.
+          </figcaption>
+        </figure>
+      </section>
+    </div>
+  </template>
+
+  <template id="modal-cold-template">
+    <div class="modal-cold-content cold-feature-inner">
+      <header class="cold-feature-head">
+        <span class="cold-feature-icon" aria-hidden="true">🌲</span>
+        <div class="cold-feature-titles">
+          <h3 class="cold-feature-title">
+            냉대 기후 <span class="cold-feature-title-en">(Continental Climate)</span>
+          </h3>
+          <p class="cold-feature-slogan">
+            끝없이 펼쳐진 침엽수림, 추운 겨울을 견디며 지혜롭게 살아가요.
+          </p>
+        </div>
+      </header>
+
+      <div class="cold-charts-row" aria-label="냉대 기후 유형별 기후 그래프">
+        <div class="cold-chart-cell">
+          <p class="cold-chart-label">냉대 습윤(모스크바)</p>
+          <div class="cold-chart-wrap">
+            <canvas id="step1-chart-moscow" width="280" height="220" aria-label="모스크바 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+        <div class="cold-chart-cell">
+          <p class="cold-chart-label">냉대 겨울 건조(블라디보스토크)</p>
+          <div class="cold-chart-wrap">
+            <canvas id="step1-chart-vladivostok" width="280" height="220" aria-label="블라디보스토크 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="cold-desc-block">
+        <p class="cold-desc-line">
+          <strong class="cold-desc-kicker">기온</strong>
+          겨울이 아주 길고 추워요! 1년 중 가장 추운 달은 영하로 내려가지만, 여름에는 기온이 꽤 올라 농사를 짓기도 해요.
+        </p>
+        <p class="cold-desc-line">
+          <strong class="cold-desc-kicker">강수</strong>
+          겨울에는 주로 눈이 내려 쌓여요. 강수량은 적은 편이지만, 여름에는 기온이 올라가면서 비가 집중되기도 한답니다.
+        </p>
+      </div>
+
+      <section class="cold-life" aria-labelledby="modal-cold-life-heading">
+        <h4 id="modal-cold-life-heading" class="cold-life-heading">인간 생활</h4>
+        <figure class="cold-life-figure">
+          <div class="cold-life-img-wrap cold-life-img-wrap--photo">
+            <img
+              class="cold-life-photo"
+              src="images/subarctic_climate_lifestyle.png"
+              alt="눈 덮인 냉대 농촌: 통나무집과 침엽수림, 두꺼운 겨울옷을 입은 가족, 빵·수프·절임·건어물과 장작·썰매개가 있는 풍경"
+              width="1024"
+              height="558"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <figcaption class="cold-life-summary">
+            장작과 보온이 있는 집, 장기 보존 식품과 뿌리채소, 썰매와 개, 눈 속에서도 이어지는 일상이 어우러진 냉대 지역의 생활 모습입니다.
+          </figcaption>
+        </figure>
+      </section>
+    </div>
+  </template>
+
+  <template id="modal-polar-template">
+    <div class="modal-polar-content polar-feature-inner">
+      <header class="polar-feature-head">
+        <span class="polar-feature-icon" aria-hidden="true">❄️</span>
+        <div class="polar-feature-titles">
+          <h3 class="polar-feature-title">
+            한대 기후 <span class="polar-feature-title-en">(Polar Climate)</span>
+          </h3>
+          <p class="polar-feature-slogan">
+            일 년 내내 꽁꽁 얼어붙은 땅, 영구 동토층 위에서도 삶은 계속됩니다.
+          </p>
+        </div>
+      </header>
+
+      <div class="polar-charts-row" aria-label="한대 기후 유형별 기후 그래프">
+        <div class="polar-chart-cell">
+          <p class="polar-chart-label">툰드라 기후(배로우)</p>
+          <div class="polar-chart-wrap">
+            <canvas id="step1-chart-barrow" width="280" height="220" aria-label="배로 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+        <div class="polar-chart-cell">
+          <p class="polar-chart-label">빙설 기후(보스토크)</p>
+          <div class="polar-chart-wrap">
+            <canvas id="step1-chart-vostok" width="280" height="220" aria-label="보스토크 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="polar-desc-block">
+        <p class="polar-desc-line">
+          <strong class="polar-desc-kicker">기온</strong>
+          가장 따뜻한 달도 10도가 넘지 않아요. 땅속이 1년 내내 얼어 있는 영구 동토층이 나타나기도 합니다.
+        </p>
+        <p class="polar-desc-line">
+          <strong class="polar-desc-kicker">강수</strong>
+          비보다는 눈이 내리지만, 공기가 너무 차가워 습기가 적기 때문에 강수량 자체는 매우 적어요.
+        </p>
+      </div>
+
+      <section class="polar-life" aria-labelledby="modal-polar-life-heading">
+        <h4 id="modal-polar-life-heading" class="polar-life-heading">인간 생활</h4>
+        <figure class="polar-life-figure">
+          <div class="polar-life-img-wrap polar-life-img-wrap--photo">
+            <img
+              class="polar-life-photo"
+              src="images/polar_climate_lifestyle.png"
+              alt="한대 툰드라: 이누이트 가족과 두꺼운 모피 옷, 이글루 마을, 허스키와 순록 썰매, 얼음 낚시와 건조대가 있는 설원 풍경"
+              width="1024"
+              height="558"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <figcaption class="polar-life-summary">
+            모피와 이글루, 썰매와 순록·개, 얼음 위 낚시와 보존 식량이 어우러진 극지·툰드라 지역의 생활 모습입니다.
           </figcaption>
         </figure>
       </section>
