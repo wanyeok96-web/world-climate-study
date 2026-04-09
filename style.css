@@ -1911,6 +1911,10 @@ h3 {
   margin-bottom: var(--space-md);
 }
 
+.climate-chart-source--step4-review {
+  margin: 8px 0 0;
+}
+
 /* Step 3: 그리드 — (1) 기후그래프+지도 (2) 그래프분석 한 줄 (3) 유형판별 카드 한 줄 */
 .step3-layout-grid {
   display: flex;
@@ -3868,9 +3872,93 @@ h3 {
   flex-wrap: wrap;
 }
 
+.step4-review-chart-panel {
+  width: 100%;
+  max-width: 440px;
+  text-align: center;
+  border: 1px solid var(--separator);
+  border-radius: 14px;
+  padding: 10px 12px 12px;
+  background: rgba(118, 118, 128, 0.06);
+  box-sizing: border-box;
+}
+
+.step4-review-chart-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.step4-review-chart-city-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: left;
+  flex: 1;
+  min-width: 0;
+}
+
+.step4-review-chart-close-btn {
+  flex-shrink: 0;
+  padding: 6px 12px !important;
+  font-size: 12px;
+}
+
+.step4-review-chart-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+}
+
+.step4-review-chart-canvas-wrap canvas {
+  max-width: 100%;
+}
+
+.step4-wrong-item--row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.step4-wrong-item-main {
+  flex: 1 1 200px;
+  min-width: 0;
+  text-align: left;
+}
+
+button.step4-review-graph-btn {
+  flex-shrink: 0;
+  padding: 6px 12px !important;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.step4-review-section {
+  margin-bottom: 16px;
+}
+
+.step4-review-section:last-child {
+  margin-bottom: 0;
+}
+
+.step4-review-section-heading {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ios-blue);
+}
+
 .step4-wrong-list {
   width: 100%;
-  height: 300px;
+  min-height: 280px;
+  max-height: min(460px, 52vh);
+  height: auto;
   overflow: auto;
   border: 1px solid var(--separator);
   border-radius: 12px;

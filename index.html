@@ -1065,14 +1065,23 @@
         <p id="step4-result-config" class="step4-result-message">설정 시간: 200초 · 설정 목표 점수: 50점</p>
         <img id="step4-result-image" class="step4-result-image" src="" alt="결과 이미지" />
         <p id="step4-result-message" class="step4-result-message"></p>
-        <div class="step4-result-actions">
-          <button type="button" class="ios-button ios-button--secondary" id="btn-step4-review-wrong">오답 확인하기</button>
-          <button type="button" class="ios-button ios-button--accent" id="btn-step4-restart">다시 하기</button>
-        </div>
       </div>
-
+      <div class="step4-result-actions" id="step4-result-actions-bar">
+        <button type="button" class="ios-button ios-button--secondary" id="btn-step4-review-wrong">시험지 확인하기</button>
+        <button type="button" class="ios-button ios-button--accent" id="btn-step4-restart">다시 하기</button>
+      </div>
+      <div id="step4-review-chart-panel" class="step4-review-chart-panel" hidden>
+        <div class="step4-review-chart-toolbar">
+          <span id="step4-review-chart-city-label" class="step4-review-chart-city-label"></span>
+          <button type="button" class="ios-button ios-button--secondary step4-review-chart-close-btn" id="btn-step4-review-chart-close">그래프 접기</button>
+        </div>
+        <div class="step4-review-chart-canvas-wrap">
+          <canvas id="step4-review-chart-canvas" width="400" height="260" aria-label="선택 도시 월별 기온·강수 그래프"></canvas>
+        </div>
+        <p class="climate-chart-source climate-chart-source--step4-review">출처: WMO Tokyo Climate Center</p>
+      </div>
       <div id="step4-wrong-view" class="step4-wrong-view" hidden>
-        <h3 class="step4-result-title">오답 리스트</h3>
+        <h3 id="step4-review-heading" class="step4-result-title">문제 리스트</h3>
         <div id="step4-wrong-list" class="step4-wrong-list" aria-live="polite"></div>
       </div>
     </div>

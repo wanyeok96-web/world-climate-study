@@ -638,6 +638,7 @@
   var currentStep = "1";
   var chartInstance = null;
   var gameChartInstance = null;
+  var step4ReviewChartInstance = null;
   /** Step 1 열대 카드 미니 그래프 (Chart.js) */
   var step1TropicalChartInstances = [];
   var step1DryChartInstances = [];
@@ -664,7 +665,23 @@
     maxRounds: 4,
     awaitingNextAfterModal: false,
     wrongAnswers: [],
+    correctAnswers: [],
+    skippedAnswers: [],
+    /** 현재 화면 문제가 답·오답 처리 전에 바뀌면 넘김으로 기록 (도시 인덱스) */
+    pendingSkipCityIndex: -1,
   };
+
+  /** Step 4 스피드 퀴즈: 출제 제외 (쿠스코·아디스아바바·멕시코시티, CSV City → slugifyId) */
+  var STEP4_EXCLUDED_CITY_IDS = ["cusco", "addis_ababa", "mexico_city"];
+
+  function getStep4EligibleCityIndices() {
+    var out = [];
+    for (var i = 0; i < CITY_DATA.length; i++) {
+      if (STEP4_EXCLUDED_CITY_IDS.indexOf(CITY_DATA[i].id) >= 0) continue;
+      out.push(i);
+    }
+    return out;
+  }
 
   function escapeHtml(s) {
     var div = document.createElement("div");
@@ -1226,13 +1243,32 @@
     return 0;
   }
 
+  /** 보스토크·아문센-스콧 기지: 기온 축만 -80~-20°C (CSV City → id: vostok, amundsenscott) */
+  function isDeepAntarcticStationChartCity(city) {
+    if (!city) return false;
+    if (city.id === "vostok" || city.id === "amundsenscott") return true;
+    var ko = String(city.nameKo || "").trim();
+    return ko === "보스토크_기지" || ko === "아문센-스콧_기지";
+  }
+
   /**
-   * Step 2~4 공통: 축 눈금 규칙 (쾨펜 1차 기호 기준)
+   * Step 1~4 공통: 축 눈금 규칙 (쾨펜 1차 기호 기준)
    * A·B·C: 기온 -20~40°C(10°), 강수 0~600mm(100)
    * D·E: 기온 -40~40°C(10°), 강수 0~400mm(100)
+   * 예외: 보스토크_기지·아문센-스콧_기지 → 기온 -80~-20°C(10°), 강수 범위는 1차 기호와 동일
    */
   function getClimateChartAxisProfile(city) {
     var L = city ? answerCodeForCity(city).charAt(0) : "C";
+    if (isDeepAntarcticStationChartCity(city)) {
+      var rainDE = L === "D" || L === "E";
+      return {
+        tempMin: -80,
+        tempMax: -20,
+        tempStepSize: 10,
+        rainMax: rainDE ? 400 : 600,
+        rainStepSize: 100,
+      };
+    }
     if (L === "D" || L === "E") {
       return { tempMin: -40, tempMax: 40, tempStepSize: 10, rainMax: 400, rainStepSize: 100 };
     }
@@ -3535,9 +3571,53 @@
     updateStep4ControlState();
   }
 
+  function destroyStep4ReviewChart() {
+    if (step4ReviewChartInstance) {
+      try {
+        step4ReviewChartInstance.destroy();
+      } catch (e) {
+        /* ignore */
+      }
+      step4ReviewChartInstance = null;
+    }
+  }
+
+  function hideStep4ReviewChartPanel() {
+    var panel = document.getElementById("step4-review-chart-panel");
+    if (panel) panel.hidden = true;
+    destroyStep4ReviewChart();
+  }
+
+  function showStep4ReviewChart(cityId) {
+    if (typeof Chart === "undefined") return;
+    var city = getCityById(cityId);
+    if (!city) return;
+    var panel = document.getElementById("step4-review-chart-panel");
+    var canvas = document.getElementById("step4-review-chart-canvas");
+    var labelEl = document.getElementById("step4-review-chart-city-label");
+    if (!panel || !canvas) return;
+    destroyStep4ReviewChart();
+    if (labelEl) labelEl.textContent = city.nameKo || city.name || String(cityId);
+    var cfg = buildChartConfig(city, true, { guidelines: false });
+    cfg.options.plugins.legend.display = true;
+    cfg.options.plugins.title.display = false;
+    step4ReviewChartInstance = new Chart(canvas.getContext("2d"), cfg);
+    panel.hidden = false;
+    window.requestAnimationFrame(function () {
+      try {
+        panel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      } catch (e2) {
+        panel.scrollIntoView();
+      }
+    });
+  }
+
   function setStep4ResultModalView(view) {
     if (step4ResultView) step4ResultView.hidden = view !== "result";
     if (step4WrongView) step4WrongView.hidden = view !== "wrong";
+    if (view === "result") {
+      hideStep4ReviewChartPanel();
+    }
   }
 
   function sumArr(arr) {
@@ -3546,12 +3626,25 @@
     return s;
   }
 
+  function step4ReviewSummaryLine(c) {
+    return (
+      "요약: 최한월 " +
+      escapeHtml(c.coldest.toFixed(1)) +
+      "°C · 최난월 " +
+      escapeHtml(c.warmest.toFixed(1)) +
+      "°C · 연강수량 " +
+      escapeHtml(String(Math.round(c.annualPrecip))) +
+      "mm"
+    );
+  }
+
   function recordStep4WrongAnswer(city, selectedCode, correctCode) {
     if (!city) return;
     var coldest = Math.min.apply(null, city.temp);
     var warmest = Math.max.apply(null, city.temp);
     var annualPrecip = sumArr(city.precip);
     step4Game.wrongAnswers.push({
+      cityId: city.id,
       cityKo: city.nameKo || city.name || "-",
       selected: selectedCode || "-",
       correct: correctCode || "-",
@@ -3561,28 +3654,163 @@
     });
   }
 
-  function renderStep4WrongAnswerList() {
+  function recordStep4CorrectAnswer(city) {
+    if (!city) return;
+    var coldest = Math.min.apply(null, city.temp);
+    var warmest = Math.max.apply(null, city.temp);
+    var annualPrecip = sumArr(city.precip);
+    step4Game.correctAnswers.push({
+      cityId: city.id,
+      cityKo: city.nameKo || city.name || "-",
+      correct: displayCodeForCity(city),
+      coldest: coldest,
+      warmest: warmest,
+      annualPrecip: annualPrecip,
+    });
+  }
+
+  function recordStep4SkippedAnswer(city) {
+    if (!city) return;
+    var coldest = Math.min.apply(null, city.temp);
+    var warmest = Math.max.apply(null, city.temp);
+    var annualPrecip = sumArr(city.precip);
+    step4Game.skippedAnswers.push({
+      cityId: city.id,
+      cityKo: city.nameKo || city.name || "-",
+      correct: displayCodeForCity(city),
+      coldest: coldest,
+      warmest: warmest,
+      annualPrecip: annualPrecip,
+    });
+  }
+
+  function flushPendingStep4Skip() {
+    if (step4Game.pendingSkipCityIndex < 0) return;
+    var pc = CITY_DATA[step4Game.pendingSkipCityIndex];
+    if (pc) recordStep4SkippedAnswer(pc);
+    step4Game.pendingSkipCityIndex = -1;
+  }
+
+  function renderStep4ReviewSections() {
     if (!step4WrongList) return;
-    if (!step4Game.wrongAnswers.length) {
-      step4WrongList.innerHTML = '<p class="step4-wrong-item-meta">아직 오답이 없습니다. 계속 도전해보세요!</p>';
-      return;
-    }
-    var html = [];
-    for (var i = 0; i < step4Game.wrongAnswers.length; i++) {
-      var w = step4Game.wrongAnswers[i];
-      html.push(
-        '<article class="step4-wrong-item">' +
-          '<p class="step4-wrong-item-title">' + escapeHtml(String(i + 1)) + ". " + escapeHtml(w.cityKo) + "</p>" +
-          '<p class="step4-wrong-item-meta">내 선택: <strong>' + escapeHtml(w.selected) + "</strong> / 정답: <strong>" + escapeHtml(w.correct) + "</strong></p>" +
-          '<p class="step4-wrong-item-meta">요약: 최한월 ' + escapeHtml(w.coldest.toFixed(1)) + "°C · 최난월 " + escapeHtml(w.warmest.toFixed(1)) + "°C · 연강수량 " + escapeHtml(String(Math.round(w.annualPrecip))) + "mm</p>" +
-        "</article>"
+    var parts = [];
+
+    function section(title, items, renderItem) {
+      var body = [];
+      if (!items.length) {
+        body.push('<p class="step4-wrong-item-meta">해당 없음</p>');
+      } else {
+        for (var i = 0; i < items.length; i++) {
+          body.push(renderItem(items[i], i));
+        }
+      }
+      parts.push(
+        '<section class="step4-review-section">' +
+          '<h4 class="step4-review-section-heading">' +
+          escapeHtml(title) +
+          "</h4>" +
+          '<div class="step4-review-section-body">' +
+          body.join("") +
+          "</div></section>"
       );
     }
-    step4WrongList.innerHTML = html.join("");
+
+    section("틀린 문제", step4Game.wrongAnswers, function (w, i) {
+      var inner =
+        '<p class="step4-wrong-item-title">' +
+        escapeHtml(String(i + 1)) +
+        ". " +
+        escapeHtml(w.cityKo) +
+        "</p>" +
+        '<p class="step4-wrong-item-meta">내 선택: <strong>' +
+        escapeHtml(w.selected) +
+        "</strong> / 정답: <strong>" +
+        escapeHtml(w.correct) +
+        "</strong></p>" +
+        '<p class="step4-wrong-item-meta">' +
+        step4ReviewSummaryLine(w) +
+        "</p>";
+      var btn = w.cityId
+        ? '<button type="button" class="ios-button ios-button--secondary step4-review-graph-btn" data-city-id="' +
+          escapeHtml(String(w.cityId)) +
+          '">그래프 보기</button>'
+        : "";
+      return (
+        '<article class="step4-wrong-item step4-wrong-item--row">' +
+          '<div class="step4-wrong-item-main">' +
+          inner +
+          "</div>" +
+          btn +
+        "</article>"
+      );
+    });
+
+    section("맞은 문제", step4Game.correctAnswers, function (w, i) {
+      var inner =
+        '<p class="step4-wrong-item-title">' +
+        escapeHtml(String(i + 1)) +
+        ". " +
+        escapeHtml(w.cityKo) +
+        "</p>" +
+        '<p class="step4-wrong-item-meta">정답: <strong>' +
+        escapeHtml(w.correct) +
+        "</strong></p>" +
+        '<p class="step4-wrong-item-meta">' +
+        step4ReviewSummaryLine(w) +
+        "</p>";
+      var btn = w.cityId
+        ? '<button type="button" class="ios-button ios-button--secondary step4-review-graph-btn" data-city-id="' +
+          escapeHtml(String(w.cityId)) +
+          '">그래프 보기</button>'
+        : "";
+      return (
+        '<article class="step4-wrong-item step4-wrong-item--row">' +
+          '<div class="step4-wrong-item-main">' +
+          inner +
+          "</div>" +
+          btn +
+        "</article>"
+      );
+    });
+
+    section("넘긴 문제", step4Game.skippedAnswers, function (w, i) {
+      var inner =
+        '<p class="step4-wrong-item-title">' +
+        escapeHtml(String(i + 1)) +
+        ". " +
+        escapeHtml(w.cityKo) +
+        "</p>" +
+        '<p class="step4-wrong-item-meta">정답 기호: <strong>' +
+        escapeHtml(w.correct) +
+        "</strong> (선택 없이 다음 문제로 넘어감)</p>" +
+        '<p class="step4-wrong-item-meta">' +
+        step4ReviewSummaryLine(w) +
+        "</p>";
+      var btn = w.cityId
+        ? '<button type="button" class="ios-button ios-button--secondary step4-review-graph-btn" data-city-id="' +
+          escapeHtml(String(w.cityId)) +
+          '">그래프 보기</button>'
+        : "";
+      return (
+        '<article class="step4-wrong-item step4-wrong-item--row">' +
+          '<div class="step4-wrong-item-main">' +
+          inner +
+          "</div>" +
+          btn +
+        "</article>"
+      );
+    });
+
+    step4WrongList.innerHTML = parts.join("");
+  }
+
+  function renderStep4WrongAnswerList() {
+    renderStep4ReviewSections();
   }
 
   function closeStep4ResultModal() {
     if (!step4ResultModal) return;
+    hideStep4ReviewChartPanel();
     step4ResultModal.hidden = true;
     step4ResultModal.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
@@ -3674,26 +3902,31 @@
   }
 
   function pickRandomGameQuestion() {
-    var n = CITY_DATA.length;
+    flushPendingStep4Skip();
+    var allowed = getStep4EligibleCityIndices();
+    var n = allowed.length;
     if (!n) return;
     var idx;
     var guard = 0;
     do {
-      idx = Math.floor(Math.random() * n);
+      idx = allowed[Math.floor(Math.random() * n)];
       guard++;
     } while (n > 1 && idx === step4Game.lastCityIdx && guard < 12);
     showStep4QuestionByCityIndex(idx, true);
+    step4Game.pendingSkipCityIndex = idx;
   }
 
   function onGameSymbolPick(sym) {
     if (!step4Game.active || step4Game.inputLocked || step4Game.currentCityIndex < 0) return;
     var city = CITY_DATA[step4Game.currentCityIndex];
+    step4Game.pendingSkipCityIndex = -1;
     var ok = step4GuessMatchesCity(sym, answerCodeForCity(city));
     var stage = document.getElementById("game-stage");
     var msg = document.getElementById("game-status-msg");
     step4Game.roundsDone += 1;
 
     if (ok) {
+      recordStep4CorrectAnswer(city);
       var gain = 10;
       step4Game.score += gain;
       updateGameHud();
@@ -3765,6 +3998,7 @@
   }
 
   function openStep4WrongListView() {
+    hideStep4ReviewChartPanel();
     renderStep4WrongAnswerList();
     setStep4ResultModalView("wrong");
   }
@@ -3792,6 +4026,8 @@
     step4Game.active = false;
     step4Game.inputLocked = false;
 
+    flushPendingStep4Skip();
+
     destroyGameChart();
     setGameSymbolButtonsDisabled(true);
     step4Game.timeLeft = step4Game.configuredSeconds;
@@ -3799,6 +4035,7 @@
     step4Game.historyCursor = -1;
     step4Game.roundsDone = 0;
     step4Game.awaitingNextAfterModal = false;
+    step4Game.pendingSkipCityIndex = -1;
     updateGameHud();
     updateStep4ControlState();
 
@@ -3829,6 +4066,9 @@
     step4Game.roundsDone = 0;
     step4Game.awaitingNextAfterModal = false;
     step4Game.wrongAnswers = [];
+    step4Game.correctAnswers = [];
+    step4Game.skippedAnswers = [];
+    step4Game.pendingSkipCityIndex = -1;
     updateGameHud();
     updateStep4ControlState();
     closeStep4ResultModal();
@@ -3840,6 +4080,11 @@
     if (!CITY_DATA.length) {
       var m0 = document.getElementById("game-status-msg");
       if (m0) m0.textContent = "도시 데이터가 없어 게임을 시작할 수 없습니다.";
+      return;
+    }
+    if (!getStep4EligibleCityIndices().length) {
+      var m1 = document.getElementById("game-status-msg");
+      if (m1) m1.textContent = "출제 가능한 도시가 없어 게임을 시작할 수 없습니다.";
       return;
     }
     buildGameSymbolGrid();
@@ -3855,6 +4100,9 @@
     step4Game.roundsDone = 0;
     step4Game.awaitingNextAfterModal = false;
     step4Game.wrongAnswers = [];
+    step4Game.correctAnswers = [];
+    step4Game.skippedAnswers = [];
+    step4Game.pendingSkipCityIndex = -1;
     updateGameHud();
 
     updateStep4ControlState();
@@ -3894,6 +4142,19 @@
       if (reviewBtn) reviewBtn.addEventListener("click", openStep4WrongListView);
       if (restartBtn) restartBtn.addEventListener("click", restartStep4FromModal);
       if (modalCloseBtn) modalCloseBtn.addEventListener("click", closeStep4ResultModal);
+      var chartCloseBtn = document.getElementById("btn-step4-review-chart-close");
+      if (chartCloseBtn) chartCloseBtn.addEventListener("click", hideStep4ReviewChartPanel);
+      var reviewListEl = document.getElementById("step4-wrong-list");
+      if (reviewListEl) {
+        reviewListEl.addEventListener("click", function (e) {
+          var t = e.target;
+          var btn = t && t.closest ? t.closest(".step4-review-graph-btn") : null;
+          if (!btn || !reviewListEl.contains(btn)) return;
+          e.preventDefault();
+          var id = btn.getAttribute("data-city-id");
+          if (id) showStep4ReviewChart(id);
+        });
+      }
     }
     if (!step4Game.active) {
       setGameSymbolButtonsDisabled(true);
