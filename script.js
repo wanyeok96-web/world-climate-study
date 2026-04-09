@@ -218,6 +218,7 @@
     return raw;
   }
 
+  /** Step 2~4·지도 색 등 정답 키: 기후데이터.CSV `Type` 열(정규화)만 사용. 월별 수치로 다시 계산하지 않음. */
   function answerCodeForCity(city) {
     return normalizeKoppenCodeFromCity(city);
   }
@@ -289,6 +290,7 @@
         renderPracticeQuizAfterShow();
       });
     }
+    destroyStep1FeatureModalCharts();
   }
 
   function showClimateLoadError() {
@@ -636,6 +638,10 @@
   var currentStep = "1";
   var chartInstance = null;
   var gameChartInstance = null;
+  /** Step 1 열대 카드 미니 그래프 (Chart.js) */
+  var step1TropicalChartInstances = [];
+  var step1DryChartInstances = [];
+  var step1TemperateChartInstances = [];
   /** Step 3: 기온/최건월 입력 포커스 — 그래프 가이드 전환용 */
   var step3InputFocus = { temp: false, precip: false };
   var step3FocusSyncTimer = null;
@@ -723,20 +729,99 @@
   }
 
   function openModal(key) {
+    if (!modalRoot || !modalTitle || !modalBody) return;
+    destroyStep1FeatureModalCharts();
+
+    if (key === "tropical") {
+      var tInfo = climateDetails.tropical;
+      if (!tInfo) return;
+      modalTitle.textContent = tInfo.title;
+      modalBody.className = "modal-body modal-body--tropical";
+      modalBody.innerHTML = "";
+      var tpl = document.getElementById("modal-tropical-template");
+      if (!tpl || !tpl.content) return;
+      modalBody.appendChild(tpl.content.cloneNode(true));
+      modalRoot.hidden = false;
+      modalRoot.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      var closeBtn = modalRoot.querySelector(".modal-close");
+      if (closeBtn) closeBtn.focus();
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          initStep1TropicalCharts();
+          step1TropicalChartInstances.forEach(function (ch) {
+            if (ch && typeof ch.resize === "function") ch.resize();
+          });
+        });
+      });
+      return;
+    }
+
+    if (key === "dry") {
+      var dInfo = climateDetails.dry;
+      if (!dInfo) return;
+      modalTitle.textContent = dInfo.title;
+      modalBody.className = "modal-body modal-body--dry";
+      modalBody.innerHTML = "";
+      var tplDry = document.getElementById("modal-dry-template");
+      if (!tplDry || !tplDry.content) return;
+      modalBody.appendChild(tplDry.content.cloneNode(true));
+      modalRoot.hidden = false;
+      modalRoot.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      var closeBtnDry = modalRoot.querySelector(".modal-close");
+      if (closeBtnDry) closeBtnDry.focus();
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          initStep1DryCharts();
+          step1DryChartInstances.forEach(function (ch) {
+            if (ch && typeof ch.resize === "function") ch.resize();
+          });
+        });
+      });
+      return;
+    }
+
+    if (key === "temperate") {
+      var tempInfo = climateDetails.temperate;
+      if (!tempInfo) return;
+      modalTitle.textContent = tempInfo.title;
+      modalBody.className = "modal-body modal-body--temperate";
+      modalBody.innerHTML = "";
+      var tplTemp = document.getElementById("modal-temperate-template");
+      if (!tplTemp || !tplTemp.content) return;
+      modalBody.appendChild(tplTemp.content.cloneNode(true));
+      modalRoot.hidden = false;
+      modalRoot.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      var closeBtnTemp = modalRoot.querySelector(".modal-close");
+      if (closeBtnTemp) closeBtnTemp.focus();
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          initStep1TemperateCharts();
+          step1TemperateChartInstances.forEach(function (ch) {
+            if (ch && typeof ch.resize === "function") ch.resize();
+          });
+        });
+      });
+      return;
+    }
+
     var data = climateDetails[key];
-    if (!data || !modalRoot || !modalTitle || !modalBody) return;
+    if (!data) return;
     modalTitle.textContent = data.title;
     modalBody.className = "modal-body modal-body--categories";
     modalBody.innerHTML = data.categories.map(renderCategoryCard).join("");
     modalRoot.hidden = false;
     modalRoot.setAttribute("aria-hidden", "false");
     document.body.style.overflow = "hidden";
-    var closeBtn = modalRoot.querySelector(".modal-close");
-    if (closeBtn) closeBtn.focus();
+    var closeBtn2 = modalRoot.querySelector(".modal-close");
+    if (closeBtn2) closeBtn2.focus();
   }
 
   function closeModal() {
     if (!modalRoot) return;
+    destroyStep1FeatureModalCharts();
     modalRoot.hidden = true;
     modalRoot.setAttribute("aria-hidden", "true");
     document.body.style.overflow = "";
@@ -1261,6 +1346,120 @@
     };
   }
 
+  function destroyStep1TropicalMiniCharts() {
+    step1TropicalChartInstances.forEach(function (c) {
+      if (c) {
+        try {
+          c.destroy();
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    });
+    step1TropicalChartInstances = [];
+  }
+
+  function initStep1TropicalCharts() {
+    if (typeof Chart === "undefined") return;
+    var defs = [
+      { id: "singapore", canvasId: "step1-chart-singapore" },
+      { id: "phuket", canvasId: "step1-chart-phuket" },
+      { id: "darwin", canvasId: "step1-chart-darwin" },
+    ];
+    destroyStep1TropicalMiniCharts();
+    defs.forEach(function (d) {
+      var canvas = document.getElementById(d.canvasId);
+      if (!canvas) return;
+      var city = getCityById(d.id);
+      if (!city) {
+        console.warn("[Step1 열대 카드] CSV에 해당 도시가 없습니다:", d.id);
+        return;
+      }
+      var cfg = buildChartConfig(city, true, { guidelines: false });
+      cfg.options.plugins.legend.display = true;
+      cfg.options.plugins.title.display = false;
+      step1TropicalChartInstances.push(new Chart(canvas.getContext("2d"), cfg));
+    });
+  }
+
+  function destroyStep1DryMiniCharts() {
+    step1DryChartInstances.forEach(function (c) {
+      if (c) {
+        try {
+          c.destroy();
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    });
+    step1DryChartInstances = [];
+  }
+
+  function initStep1DryCharts() {
+    if (typeof Chart === "undefined") return;
+    var defs = [
+      { id: "cairo", canvasId: "step1-chart-cairo" },
+      { id: "ulaanbaatar", canvasId: "step1-chart-ulaanbaatar" },
+    ];
+    destroyStep1DryMiniCharts();
+    defs.forEach(function (d) {
+      var canvas = document.getElementById(d.canvasId);
+      if (!canvas) return;
+      var city = getCityById(d.id);
+      if (!city) {
+        console.warn("[Step1 건조 모달] CSV에 해당 도시가 없습니다:", d.id);
+        return;
+      }
+      var cfg = buildChartConfig(city, true, { guidelines: false });
+      cfg.options.plugins.legend.display = true;
+      cfg.options.plugins.title.display = false;
+      step1DryChartInstances.push(new Chart(canvas.getContext("2d"), cfg));
+    });
+  }
+
+  function destroyStep1TemperateMiniCharts() {
+    step1TemperateChartInstances.forEach(function (c) {
+      if (c) {
+        try {
+          c.destroy();
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    });
+    step1TemperateChartInstances = [];
+  }
+
+  function initStep1TemperateCharts() {
+    if (typeof Chart === "undefined") return;
+    var defs = [
+      { id: "london", canvasId: "step1-chart-london" },
+      { id: "rome", canvasId: "step1-chart-rome" },
+      { id: "seoul", canvasId: "step1-chart-seoul" },
+      { id: "tokyo", canvasId: "step1-chart-tokyo" },
+    ];
+    destroyStep1TemperateMiniCharts();
+    defs.forEach(function (d) {
+      var canvas = document.getElementById(d.canvasId);
+      if (!canvas) return;
+      var city = getCityById(d.id);
+      if (!city) {
+        console.warn("[Step1 온대 모달] CSV에 해당 도시가 없습니다:", d.id);
+        return;
+      }
+      var cfg = buildChartConfig(city, true, { guidelines: false });
+      cfg.options.plugins.legend.display = true;
+      cfg.options.plugins.title.display = false;
+      step1TemperateChartInstances.push(new Chart(canvas.getContext("2d"), cfg));
+    });
+  }
+
+  function destroyStep1FeatureModalCharts() {
+    destroyStep1TropicalMiniCharts();
+    destroyStep1DryMiniCharts();
+    destroyStep1TemperateMiniCharts();
+  }
+
   function destroyChart() {
     if (chartInstance) {
       chartInstance.destroy();
@@ -1557,7 +1756,7 @@
   }
 
   /**
-   * CITY_DATA.code → Step 3 MCQ 정답 (연습하기와 동일). 3차(a/b)는 Cfa·Cfb만.
+   * CSV `Type`(정규화) → Step 3 MCQ 정답 (연습하기와 동일). 3차(a/b)는 Cfa·Cfb만.
    */
   /** Cfa·Cfb만 3차(a/b) 문항 사용 (교재: Cf 계열만 3차 구분) */
   function cityNeedsMcqThirdStep(code) {
@@ -2613,14 +2812,26 @@
     if (userMcq.q1 !== exp.q1) {
       if (exp.q1 === "C" && userMcq.q1 === "D") {
         lines.push(
-          "최한월 기온이 −3°C를 넘습니다(" +
-            tR.coldest +
-            "°C). 따라서 냉대(D)가 아니라 온대(C) 기후에 속합니다."
+          "1차 정답은 온대(C)입니다. 최한·최난월과 연강수를 그래프에서 다시 확인해 보세요."
         );
+        if (tR.coldest > -3) {
+          lines.push(
+            "이 지역 최한월은 " + tR.coldest + "°C로 −3°C보다 높아, 육상 구분에서 온대(C)로 두는 설명과 맞습니다."
+          );
+        }
       } else if (exp.q1 === "D" && userMcq.q1 === "C") {
         lines.push(
-          "최한월이 −3°C 이하(" + tR.coldest + "°C)이면 육상 쾨펜 구분상 냉대(D)입니다. 온대(C)로 보기 어렵습니다."
+          "1차 정답은 냉대(D)입니다. 최한·최난월과 강수 계절을 그래프에서 다시 짚어 보세요."
         );
+        if (tR.coldest <= -3) {
+          lines.push(
+            "최한월 " + tR.coldest + "°C는 −3°C 이하로, 육상 쾨펜에서 흔히 쓰는 C/D 경계와 맞습니다."
+          );
+        } else {
+          lines.push(
+            "최한월이 −3°C보다 높아 헷갈릴 수 있습니다. 여름철 기온·강수의 대륙성과 건습 패턴을 함께 보고 1차를 다시 선택해 보세요."
+          );
+        }
       } else if (exp.q1 === "A") {
         lines.push(
           "가장 추운 달의 평균기온이 " + tR.coldest + "°C로 18°C 이상이어야 열대(A)로 분류됩니다."
@@ -2666,7 +2877,7 @@
         lines.push(
           "2차 정답은 「" +
             exp.q2 +
-            "」입니다. 자료로 산출한 쾨펜 코드는 " +
+            "」입니다. 이 도시에 제시된 기후 기호는 " +
             canonical +
             "이며, 고·저일사반의 최건·최다우 관계(약 3배·1/3 기준)를 다시 짚어 보세요."
         );
@@ -3595,12 +3806,26 @@
     if (num === "4") {
       initStep4();
     }
+    if (num === "1") {
+      requestAnimationFrame(function () {
+        step1TropicalChartInstances.forEach(function (ch) {
+          if (ch && typeof ch.resize === "function") ch.resize();
+        });
+        step1DryChartInstances.forEach(function (ch) {
+          if (ch && typeof ch.resize === "function") ch.resize();
+        });
+        step1TemperateChartInstances.forEach(function (ch) {
+          if (ch && typeof ch.resize === "function") ch.resize();
+        });
+      });
+    }
 
     currentStep = num;
   }
 
   document.querySelectorAll(".climate-card").forEach(function (card) {
     function onActivate() {
+      if (card.getAttribute("data-no-modal") === "true") return;
       var key = card.getAttribute("data-climate");
       if (key) openModal(key);
     }

@@ -152,8 +152,8 @@ h3 {
 
 .title-section-brand {
   margin: 0;
-  font-size: 26px;
-  font-weight: 700;
+  font-size: clamp(30px, 5.5vw, 40px);
+  font-weight: 800;
   letter-spacing: -0.03em;
   line-height: var(--title-section-leading);
   color: var(--text-primary);
@@ -382,6 +382,464 @@ h3 {
   font-weight: 400;
   line-height: 1.5;
   color: var(--text-secondary);
+}
+
+/* Step 1 — 열대 상세(모달 본문, 템플릿 복제 · CSV 연동 그래프) */
+.modal-body--tropical {
+  padding-bottom: var(--space-md);
+}
+
+.modal-tropical-content {
+  width: 100%;
+}
+
+.tropical-feature-inner {
+  width: 100%;
+}
+
+.tropical-feature-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  text-align: left;
+}
+
+.tropical-feature-icon {
+  font-size: 40px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.tropical-feature-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.tropical-feature-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.tropical-feature-title-en {
+  font-size: 16px;
+  font-weight: 600;
+  color: #ff6b6b;
+}
+
+.tropical-feature-slogan {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.tropical-charts-scroll {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--space-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
+  margin-bottom: var(--space-md);
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.tropical-chart-cell {
+  flex: 0 0 auto;
+  width: min(280px, 82vw);
+  scroll-snap-align: start;
+}
+
+.tropical-chart-label {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+  text-align: center;
+}
+
+.tropical-chart-wrap {
+  height: 220px;
+  width: 100%;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--separator);
+  background: var(--bg-card);
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.tropical-desc-block {
+  margin-bottom: var(--space-md);
+  text-align: left;
+}
+
+.tropical-desc-line {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
+.tropical-desc-line:last-child {
+  margin-bottom: 0;
+}
+
+.tropical-desc-kicker {
+  color: #ff6b6b;
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.tropical-life-heading {
+  margin: 0 0 var(--space-sm);
+  font-size: 16px;
+  font-weight: 800;
+  color: #ff6b6b;
+  text-align: left;
+}
+
+.tropical-life-figure {
+  margin: 0;
+}
+
+.tropical-life-img-wrap {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid rgba(255, 107, 107, 0.22);
+  background: rgba(255, 107, 107, 0.06);
+}
+
+.tropical-life-img-wrap--photo {
+  line-height: 0;
+}
+
+.tropical-life-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.tropical-life-summary {
+  margin: var(--space-sm) 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+/* Step 1 — 건조 상세(모달 본문, 포인트 #EDC9AF) */
+.modal-body--dry {
+  padding-bottom: var(--space-md);
+}
+
+.modal-dry-content {
+  width: 100%;
+}
+
+.dry-feature-inner {
+  width: 100%;
+}
+
+.dry-feature-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  padding-left: var(--space-sm);
+  border-left: 4px solid #edc9af;
+  text-align: left;
+}
+
+.dry-feature-icon {
+  font-size: 40px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.dry-feature-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.dry-feature-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.dry-feature-title-en {
+  font-size: 16px;
+  font-weight: 600;
+  color: #c9a882;
+}
+
+.dry-feature-slogan {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.dry-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  align-items: start;
+}
+
+@media (max-width: 640px) {
+  .dry-charts-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dry-chart-cell {
+  min-width: 0;
+}
+
+.dry-chart-label {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1c1c1e;
+  text-align: center;
+}
+
+.dry-chart-wrap {
+  height: 220px;
+  width: 100%;
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(237, 201, 175, 0.55);
+  background: var(--bg-card);
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.dry-desc-block {
+  margin-bottom: var(--space-md);
+  text-align: left;
+}
+
+.dry-desc-line {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
+.dry-desc-line:last-child {
+  margin-bottom: 0;
+}
+
+.dry-desc-kicker {
+  color: #b5916f;
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.dry-life-heading {
+  margin: 0 0 var(--space-sm);
+  font-size: 16px;
+  font-weight: 800;
+  color: #b5916f;
+  text-align: left;
+}
+
+.dry-life-figure {
+  margin: 0;
+}
+
+.dry-life-img-wrap {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid rgba(237, 201, 175, 0.5);
+  background: rgba(237, 201, 175, 0.12);
+}
+
+.dry-life-img-wrap--photo {
+  line-height: 0;
+}
+
+.dry-life-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+.dry-life-summary {
+  margin: var(--space-sm) 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+/* Step 1 — 온대 상세(모달, 포인트 #90BE6D) */
+.modal-body--temperate {
+  padding-bottom: var(--space-md);
+}
+
+.modal-temperate-content {
+  width: 100%;
+}
+
+.temperate-feature-inner {
+  width: 100%;
+}
+
+.temperate-feature-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  padding-left: var(--space-sm);
+  border-left: 4px solid #90be6d;
+  text-align: left;
+}
+
+.temperate-feature-icon {
+  font-size: 40px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.temperate-feature-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.temperate-feature-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+}
+
+.temperate-feature-title-en {
+  font-size: 16px;
+  font-weight: 600;
+  color: #6a9a52;
+}
+
+.temperate-feature-slogan {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.temperate-charts-scroll {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--space-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
+  margin-bottom: var(--space-md);
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.temperate-chart-cell {
+  flex: 0 0 auto;
+  width: min(280px, 82vw);
+  scroll-snap-align: start;
+}
+
+.temperate-chart-label {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1c1c1e;
+  text-align: center;
+}
+
+.temperate-chart-wrap {
+  height: 220px;
+  width: 100%;
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(144, 190, 109, 0.5);
+  background: var(--bg-card);
+  padding: 6px;
+  box-sizing: border-box;
+}
+
+.temperate-desc-block {
+  margin-bottom: var(--space-md);
+  text-align: left;
+}
+
+.temperate-desc-line {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
+.temperate-desc-line:last-child {
+  margin-bottom: 0;
+}
+
+.temperate-desc-kicker {
+  color: #6a9a52;
+  font-weight: 700;
+  margin-right: 6px;
+}
+
+.temperate-life-heading {
+  margin: 0 0 var(--space-sm);
+  font-size: 16px;
+  font-weight: 800;
+  color: #6a9a52;
+  text-align: left;
+}
+
+.temperate-life-figure {
+  margin: 0;
+}
+
+.temperate-life-img-wrap {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid rgba(144, 190, 109, 0.45);
+  background: rgba(144, 190, 109, 0.1);
+}
+
+.temperate-life-img-wrap--photo {
+  line-height: 0;
+}
+
+.temperate-life-photo {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.temperate-life-summary {
+  margin: var(--space-sm) 0 0;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  text-align: left;
 }
 
 /* Modal */

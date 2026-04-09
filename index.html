@@ -25,12 +25,12 @@
         </div>
       </div>
       <div class="title-section" aria-labelledby="brand-title">
-        <p class="title-section-tagline">당신의 지리학습을 도와줄, 또 하나의 지리 학습 도구</p>
-        <h1 id="brand-title" class="title-section-brand">어나더 지오엑스</h1>
-        <p class="title-section-series">세계의 기후</p>
+        <p class="title-section-tagline">당신의 지리 루틴을 만들어줄, 또 하나의 지리 학습 도구</p>
+        <h1 id="brand-title" class="title-section-brand">어나더 지오엑스(geo-eX)</h1>
+        <p class="title-section-series">Exercise to be an expert — world climate master</p>
         <div class="title-section-emojis" role="group" aria-label="열대, 건조, 온대, 냉대, 한대 기후">
           <span class="title-section-emoji" aria-hidden="true">🌴</span>
-          <span class="title-section-emoji" aria-hidden="true">🏜️</span>
+          <span class="title-section-emoji" aria-hidden="true">🌵</span>
           <span class="title-section-emoji" aria-hidden="true">🌿</span>
           <span class="title-section-emoji" aria-hidden="true">🌲</span>
           <span class="title-section-emoji" aria-hidden="true">❄️</span>
@@ -71,17 +71,23 @@
           <article class="climate-card" role="listitem" tabindex="0" data-climate="tropical">
             <span class="climate-card-icon" aria-hidden="true">🌴</span>
             <h3 class="climate-card-name">열대</h3>
-            <p class="climate-card-desc">적도 저기압대와 대류로 연중 고온. Af(우림)·Am(몬순)·Aw(사바나) 등 강수 패턴별로 경관이 갈립니다.</p>
+            <p class="climate-card-desc">
+              적도 저기압대와 대류로 연중 고온. Af(우림)·Am(몬순)·Aw(사바나) 등 강수 패턴별로 경관이 갈립니다. 카드를 누르면 그래프와 인간 생활을 볼 수 있어요.
+            </p>
           </article>
           <article class="climate-card" role="listitem" tabindex="0" data-climate="dry">
-            <span class="climate-card-icon" aria-hidden="true">🏜️</span>
+            <span class="climate-card-icon" aria-hidden="true">🌵</span>
             <h3 class="climate-card-name">건조</h3>
-            <p class="climate-card-desc">증발이 강수를 넘는 환경입니다. BWh·BWk 사막과 BSh·BSk 스텝 등으로 나뉩니다.</p>
+            <p class="climate-card-desc">
+              증발이 강수를 넘는 환경입니다. BWh·BWk 사막과 BSh·BSk 스텝 등으로 나뉩니다. 카드를 누르면 카이로·울란바토르 그래프와 건조 지역의 생활 모습을 볼 수 있어요.
+            </p>
           </article>
           <article class="climate-card" role="listitem" tabindex="0" data-climate="temperate">
-            <span class="climate-card-icon" aria-hidden="true">🌿</span>
+            <span class="climate-card-icon" aria-hidden="true">🌤️</span>
             <h3 class="climate-card-name">온대</h3>
-            <p class="climate-card-desc">편서풍·전선과 해양·대륙의 차이로 사계가 분명합니다. Cfb·Cfa·Csa·Cwa 등 해양성·몬순·지중해형이 대표적입니다.</p>
+            <p class="climate-card-desc">
+              편서풍·전선과 해양·대륙의 차이로 사계가 분명합니다. Cfb·Cfa·Cs·Cw 등 해양성·몬순·지중해형이 대표적입니다. 카드를 누르면 런던·로마·서울·도쿄 그래프와 인간 생활을 볼 수 있어요.
+            </p>
           </article>
           <article class="climate-card" role="listitem" tabindex="0" data-climate="cold">
             <span class="climate-card-icon" aria-hidden="true">🌲</span>
@@ -703,6 +709,210 @@
       <div id="modal-body" class="modal-body"></div>
     </div>
   </div>
+
+  <template id="modal-tropical-template">
+    <div class="modal-tropical-content tropical-feature-inner">
+      <header class="tropical-feature-head">
+        <span class="tropical-feature-icon" aria-hidden="true">🌴</span>
+        <div class="tropical-feature-titles">
+          <h3 class="tropical-feature-title">
+            열대 기후 <span class="tropical-feature-title-en">(Tropical Climate)</span>
+          </h3>
+          <p class="tropical-feature-slogan">
+            일년 내내 뜨거운 여름, 매일 오후 시원하게 쏟아지는 소나기!
+          </p>
+        </div>
+      </header>
+
+      <div class="tropical-charts-scroll" aria-label="열대 기후 유형별 기후 그래프">
+        <div class="tropical-chart-cell">
+          <p class="tropical-chart-label">열대 우림(싱가포르)</p>
+          <div class="tropical-chart-wrap">
+            <canvas id="step1-chart-singapore" width="280" height="220" aria-label="싱가포르 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+        <div class="tropical-chart-cell">
+          <p class="tropical-chart-label">열대 몬순(푸껫)</p>
+          <div class="tropical-chart-wrap">
+            <canvas id="step1-chart-phuket" width="280" height="220" aria-label="푸껫 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+        <div class="tropical-chart-cell">
+          <p class="tropical-chart-label">사바나(다윈)</p>
+          <div class="tropical-chart-wrap">
+            <canvas id="step1-chart-darwin" width="280" height="220" aria-label="다윈 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="tropical-desc-block">
+        <p class="tropical-desc-line">
+          <strong class="tropical-desc-kicker">기온</strong>
+          반팔 옷만 챙기세요! 가장 추운 달도 18°C보다 높아서 겨울이 없는 영원한 여름이랍니다.
+        </p>
+        <p class="tropical-desc-line">
+          <strong class="tropical-desc-kicker">강수</strong>
+          우산은 필수 아이템! 매일 오후 &apos;스콜&apos;이라는 소나기가 더위를 식혀주러 찾아와요.
+        </p>
+      </div>
+
+      <section class="tropical-life" aria-labelledby="modal-tropical-life-heading">
+        <h4 id="modal-tropical-life-heading" class="tropical-life-heading">인간 생활</h4>
+        <figure class="tropical-life-figure">
+          <div class="tropical-life-img-wrap tropical-life-img-wrap--photo">
+            <img
+              class="tropical-life-photo"
+              src="images/tropical_lifestyle.png"
+              alt="열대 숲과 강가 마을: 고상가옥, 가벼운 복식, 코코넛·바나나 등 열대 과일과 국지적 소나기가 함께 담긴 삽화"
+              width="1024"
+              height="558"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <figcaption class="tropical-life-summary">
+            통풍과 침수에 대비한 고상가옥, 햇볕을 피하는 가벼운 옷차림, 코코넛·바나나 등 지역 농산물이 어우러진 열대 지역의 생활 모습입니다.
+          </figcaption>
+        </figure>
+      </section>
+    </div>
+  </template>
+
+  <template id="modal-dry-template">
+    <div class="modal-dry-content dry-feature-inner">
+      <header class="dry-feature-head">
+        <span class="dry-feature-icon" aria-hidden="true">🌵</span>
+        <div class="dry-feature-titles">
+          <h3 class="dry-feature-title">
+            건조 기후 <span class="dry-feature-title-en">(Dry Climate)</span>
+          </h3>
+          <p class="dry-feature-slogan">
+            비보다 증발량이 더 많아요! 끝없이 펼쳐진 모래 언덕과 오아시스
+          </p>
+        </div>
+      </header>
+
+      <div class="dry-charts-row" aria-label="건조 기후 유형별 기후 그래프">
+        <div class="dry-chart-cell">
+          <p class="dry-chart-label">사막 기후(카이로)</p>
+          <div class="dry-chart-wrap">
+            <canvas id="step1-chart-cairo" width="280" height="220" aria-label="카이로 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+        <div class="dry-chart-cell">
+          <p class="dry-chart-label">스텝 기후(울란바토르)</p>
+          <div class="dry-chart-wrap">
+            <canvas id="step1-chart-ulaanbaatar" width="280" height="220" aria-label="울란바토르 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="dry-desc-block">
+        <p class="dry-desc-line">
+          <strong class="dry-desc-kicker">기온</strong>
+          낮에는 타오를 듯 뜨겁지만, 밤에는 덜덜 떨릴 정도로 추워요! 하루 동안의 기온 차이가 매우 크답니다.
+        </p>
+        <p class="dry-desc-line">
+          <strong class="dry-desc-kicker">강수</strong>
+          비가 거의 오지 않아요. 일 년 내내 내리는 비를 다 합쳐도 한 뼘이 안 될 때가 많죠.
+        </p>
+      </div>
+
+      <section class="dry-life" aria-labelledby="modal-dry-life-heading">
+        <h4 id="modal-dry-life-heading" class="dry-life-heading">인간 생활</h4>
+        <figure class="dry-life-figure">
+          <div class="dry-life-img-wrap dry-life-img-wrap--photo">
+            <img
+              class="dry-life-photo"
+              src="images/dry_climate_lifestyle.png"
+              alt="건조 기후 오아시스 마을: 진흙벽돌 가옥, 대추야자와 우물, 가벼운 로브와 터번을 입은 사람들, 낙타와 대추야자 수확 장면"
+              width="1024"
+              height="558"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <figcaption class="dry-life-summary">
+            작은 창과 두꺼운 벽의 가옥, 햇볕과 모래바람을 피하는 긴 옷차림, 오아시스와 우물을 중심으로 한 농사·대추야자·낙타 수송이 어우러진 건조 지역의 생활 모습입니다.
+          </figcaption>
+        </figure>
+      </section>
+    </div>
+  </template>
+
+  <template id="modal-temperate-template">
+    <div class="modal-temperate-content temperate-feature-inner">
+      <header class="temperate-feature-head">
+        <span class="temperate-feature-icon" aria-hidden="true">🌤️</span>
+        <div class="temperate-feature-titles">
+          <h3 class="temperate-feature-title">
+            온대 기후 <span class="temperate-feature-title-en">(Temperate Climate)</span>
+          </h3>
+          <p class="temperate-feature-slogan">
+            사계절이 뚜렷하고 온화한 날씨, 우리가 살기에 가장 좋은 기후예요!
+          </p>
+        </div>
+      </header>
+
+      <div class="temperate-charts-scroll" aria-label="온대 기후 유형별 기후 그래프">
+        <div class="temperate-chart-cell">
+          <p class="temperate-chart-label">서안 해양성(런던)</p>
+          <div class="temperate-chart-wrap">
+            <canvas id="step1-chart-london" width="280" height="220" aria-label="런던 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+        <div class="temperate-chart-cell">
+          <p class="temperate-chart-label">지중해성(로마)</p>
+          <div class="temperate-chart-wrap">
+            <canvas id="step1-chart-rome" width="280" height="220" aria-label="로마 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+        <div class="temperate-chart-cell">
+          <p class="temperate-chart-label">온대 겨울 건조(서울)</p>
+          <div class="temperate-chart-wrap">
+            <canvas id="step1-chart-seoul" width="280" height="220" aria-label="서울 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+        <div class="temperate-chart-cell">
+          <p class="temperate-chart-label">온대 온윤(도쿄)</p>
+          <div class="temperate-chart-wrap">
+            <canvas id="step1-chart-tokyo" width="280" height="220" aria-label="도쿄 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="temperate-desc-block">
+        <p class="temperate-desc-line">
+          <strong class="temperate-desc-kicker">기온</strong>
+          봄, 여름, 가을, 겨울의 변화를 뚜렷하게 느낄 수 있어요. 일 년 내내 대체로 따뜻해서 농사짓기에도 딱이죠!
+        </p>
+        <p class="temperate-desc-line">
+          <strong class="temperate-desc-kicker">강수</strong>
+          런던처럼 비가 골고루 오는 곳도 있고, 로마처럼 여름이 건조한 곳, 그리고 우리나라와 일본처럼 여름에 비가 집중되는 곳도 있어요.
+        </p>
+      </div>
+
+      <section class="temperate-life" aria-labelledby="modal-temperate-life-heading">
+        <h4 id="modal-temperate-life-heading" class="temperate-life-heading">인간 생활</h4>
+        <figure class="temperate-life-figure">
+          <div class="temperate-life-img-wrap temperate-life-img-wrap--photo">
+            <img
+              class="temperate-life-photo"
+              src="images/temperate_climate_lifestyle.png"
+              alt="온대 농촌: 석조와 목조 주택, 풍성한 과일·채소 수확과 빵·샐러드, 포도밭과 정원, 토끼 우리와 우물이 있는 평화로운 풍경"
+              width="1024"
+              height="558"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
+          <figcaption class="temperate-life-summary">
+            사계에 맞는 단단한 집, 다양한 농작물과 과수, 가족이 함께하는 정원과 목축이 어우러진 온대 지역의 생활 모습입니다.
+          </figcaption>
+        </figure>
+      </section>
+    </div>
+  </template>
 
   <div id="step4-result-modal" class="step4-result-modal" hidden aria-hidden="true">
     <div class="step4-result-backdrop"></div>
