@@ -645,6 +645,7 @@
   var step1TemperateChartInstances = [];
   var step1ColdChartInstances = [];
   var step1PolarChartInstances = [];
+  var step1HighlandChartInstances = [];
   /** Step 3: 기온/최건월 입력 포커스 — 그래프 가이드 전환용 */
   var step3InputFocus = { temp: false, precip: false };
   var step3FocusSyncTimer = null;
@@ -869,6 +870,29 @@
         requestAnimationFrame(function () {
           initStep1PolarCharts();
           step1PolarChartInstances.forEach(function (ch) {
+            if (ch && typeof ch.resize === "function") ch.resize();
+          });
+        });
+      });
+      return;
+    }
+
+    if (key === "highland") {
+      modalTitle.textContent = "고산 기후";
+      modalBody.className = "modal-body modal-body--highland";
+      modalBody.innerHTML = "";
+      var tplHigh = document.getElementById("modal-highland-template");
+      if (!tplHigh || !tplHigh.content) return;
+      modalBody.appendChild(tplHigh.content.cloneNode(true));
+      modalRoot.hidden = false;
+      modalRoot.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+      var closeBtnHigh = modalRoot.querySelector(".modal-close");
+      if (closeBtnHigh) closeBtnHigh.focus();
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          initStep1HighlandCharts();
+          step1HighlandChartInstances.forEach(function (ch) {
             if (ch && typeof ch.resize === "function") ch.resize();
           });
         });
@@ -1590,6 +1614,19 @@
     step1PolarChartInstances = [];
   }
 
+  function destroyStep1HighlandMiniCharts() {
+    step1HighlandChartInstances.forEach(function (c) {
+      if (c) {
+        try {
+          c.destroy();
+        } catch (e) {
+          /* ignore */
+        }
+      }
+    });
+    step1HighlandChartInstances = [];
+  }
+
   function initStep1PolarCharts() {
     if (typeof Chart === "undefined") return;
     var defs = [
@@ -1612,12 +1649,35 @@
     });
   }
 
+  function initStep1HighlandCharts() {
+    if (typeof Chart === "undefined") return;
+    var defs = [
+      { id: "bogota", canvasId: "step1-chart-bogota" },
+      { id: "quito", canvasId: "step1-chart-quito" },
+    ];
+    destroyStep1HighlandMiniCharts();
+    defs.forEach(function (d) {
+      var canvas = document.getElementById(d.canvasId);
+      if (!canvas) return;
+      var city = getCityById(d.id);
+      if (!city) {
+        console.warn("[Step1 고산 모달] CSV에 해당 도시가 없습니다:", d.id);
+        return;
+      }
+      var cfg = buildChartConfig(city, true, { guidelines: false });
+      cfg.options.plugins.legend.display = true;
+      cfg.options.plugins.title.display = false;
+      step1HighlandChartInstances.push(new Chart(canvas.getContext("2d"), cfg));
+    });
+  }
+
   function destroyStep1FeatureModalCharts() {
     destroyStep1TropicalMiniCharts();
     destroyStep1DryMiniCharts();
     destroyStep1TemperateMiniCharts();
     destroyStep1ColdMiniCharts();
     destroyStep1PolarMiniCharts();
+    destroyStep1HighlandMiniCharts();
   }
 
   function destroyChart() {
@@ -1652,28 +1712,65 @@
     card.hidden = true;
   }
 
+  /** 한글 마지막 음절 받침 여부 — 주제 조사 은/는 */
+  function hangulTopicParticleEunNeun(nameKo) {
+    var s = String(nameKo || "").trim();
+    if (!s) return "은(는)";
+    var ch = s.charAt(s.length - 1);
+    var code = ch.charCodeAt(0);
+    if (code < 0xac00 || code > 0xd7a3) return "는";
+    return (code - 0xac00) % 28 !== 0 ? "은" : "는";
+  }
+
   function showStep3ReportCard() {
     var city = getCurrentCity();
     if (!city) return;
     var tcIn = document.getElementById("s3-t-coldest");
+    var twIn = document.getElementById("s3-t-warmest");
     var pdIn = document.getElementById("s3-p-driest");
     var body = document.getElementById("s3-report-body");
     var card = document.getElementById("s3-report-card");
     if (!card || !body) return;
     var ar = actualTempRange(city);
     var tc = tcIn && tcIn.value !== "" ? parseFloat(tcIn.value) : ar.coldest;
+    var tw = twIn && twIn.value !== "" ? parseFloat(twIn.value) : ar.warmest;
     var pd = pdIn && pdIn.value !== "" ? parseFloat(pdIn.value) : Math.min.apply(null, city.precip);
     var sym = answerCodeForCity(city);
-    body.textContent =
-      "내가 분석한 결과: " +
-      city.nameKo +
-      "은(는) 최한월 " +
-      tc +
-      "°, 최건월 " +
-      pd +
-      "mm이므로 " +
-      sym +
-      "입니다.";
+    var name = city.nameKo || city.name || "이 도시";
+    var particle = hangulTopicParticleEunNeun(name);
+    var tcStr = fmtGuideTemp(tc);
+    var twStr = fmtGuideTemp(tw);
+    var pdStr = String(Math.round(pd));
+    var usesCfThird = cityNeedsMcqThirdStep(sym);
+    var text;
+    if (usesCfThird) {
+      text =
+        "내가 분석한 결과: " +
+        name +
+        particle +
+        " 최한월 " +
+        tcStr +
+        "°, 최건월 " +
+        pdStr +
+        "mm, 최난월 " +
+        twStr +
+        "°이므로 " +
+        sym +
+        "입니다.";
+    } else {
+      text =
+        "내가 분석한 결과: " +
+        name +
+        particle +
+        " 최한월 " +
+        tcStr +
+        "°, 최건월 " +
+        pdStr +
+        "mm 등을 토대로 1·2차까지 판별한 결과가 자료 표기 " +
+        sym +
+        "와 일치합니다. (이 유형은 Step 3에서 3차 a/b 문항을 쓰지 않습니다.)";
+    }
+    body.textContent = text;
     card.classList.remove("s3-report-card--visible");
     card.hidden = false;
     var chk = card.querySelector(".s3-report-check");

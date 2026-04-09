@@ -455,6 +455,9 @@ h3 {
   flex: 0 0 auto;
   width: min(280px, 82vw);
   scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .tropical-chart-label {
@@ -468,11 +471,27 @@ h3 {
 .tropical-chart-wrap {
   height: 220px;
   width: 100%;
+  max-width: 280px;
   border-radius: var(--radius-card);
   border: 1px solid var(--separator);
   background: var(--bg-card);
   padding: 6px;
   box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tropical-chart-wrap canvas,
+.dry-chart-wrap canvas,
+.temperate-chart-wrap canvas,
+.cold-chart-wrap canvas,
+.polar-chart-wrap canvas {
+  display: block;
+  margin: 0 auto;
+  max-width: 100%;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .tropical-desc-block {
@@ -524,7 +543,6 @@ h3 {
   display: block;
   width: 100%;
   height: auto;
-  vertical-align: middle;
 }
 
 .tropical-life-summary {
@@ -593,21 +611,27 @@ h3 {
 }
 
 .dry-charts-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: var(--space-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
   margin-bottom: var(--space-md);
-  align-items: start;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
 }
 
-@media (max-width: 640px) {
-  .dry-charts-row {
-    grid-template-columns: 1fr;
-  }
-}
+/* grid → scroll 통일로 미디어쿼리 불필요 */
 
 .dry-chart-cell {
-  min-width: 0;
+  flex: 0 0 auto;
+  width: min(280px, 82vw);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .dry-chart-label {
@@ -621,6 +645,7 @@ h3 {
 .dry-chart-wrap {
   height: 220px;
   width: 100%;
+  max-width: 280px;
   border-radius: var(--radius-card);
   border: 1px solid rgba(237, 201, 175, 0.55);
   background: var(--bg-card);
@@ -677,7 +702,6 @@ h3 {
   display: block;
   width: 100%;
   height: auto;
-  vertical-align: middle;
 }
 
 .dry-life-summary {
@@ -899,21 +923,27 @@ h3 {
 }
 
 .cold-charts-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: var(--space-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
   margin-bottom: var(--space-md);
-  align-items: start;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
 }
 
-@media (max-width: 640px) {
-  .cold-charts-row {
-    grid-template-columns: 1fr;
-  }
-}
+/* grid → scroll 통일로 미디어쿼리 불필요 */
 
 .cold-chart-cell {
-  min-width: 0;
+  flex: 0 0 auto;
+  width: min(280px, 82vw);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .cold-chart-label {
@@ -927,6 +957,7 @@ h3 {
 .cold-chart-wrap {
   height: 220px;
   width: 100%;
+  max-width: 280px;
   border-radius: var(--radius-card);
   border: 1px solid rgba(45, 90, 39, 0.45);
   background: var(--bg-card);
@@ -1051,21 +1082,29 @@ h3 {
 }
 
 .polar-charts-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   gap: var(--space-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
   margin-bottom: var(--space-md);
-  align-items: start;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
 }
 
 @media (max-width: 640px) {
-  .polar-charts-row {
-    grid-template-columns: 1fr;
-  }
+  /* grid → scroll 통일로 별도 처리 없음 */
 }
 
 .polar-chart-cell {
-  min-width: 0;
+  flex: 0 0 auto;
+  width: min(280px, 82vw);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .polar-chart-label {
@@ -1079,11 +1118,167 @@ h3 {
 .polar-chart-wrap {
   height: 220px;
   width: 100%;
+  max-width: 280px;
   border-radius: var(--radius-card);
   border: 1px solid rgba(161, 196, 253, 0.65);
   background: var(--bg-card);
   padding: 6px;
   box-sizing: border-box;
+}
+
+/* Step 1 — 고산 상세(모달) */
+.modal-body--highland {
+  padding-bottom: var(--space-md);
+}
+
+.modal-highland-content,
+.highland-feature-inner {
+  width: 100%;
+}
+
+.highland-feature-head {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+  padding-left: var(--space-sm);
+  border-left: 4px solid #a9a9a9;
+  text-align: left;
+}
+
+.highland-feature-icon {
+  font-size: 40px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.highland-feature-titles {
+  flex: 1;
+  min-width: 0;
+}
+
+.highland-feature-title {
+  margin: 0 0 6px;
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: #1c1c1e; /* 요구: 제목 검정 */
+}
+
+.highland-feature-title-en {
+  font-size: 16px;
+  font-weight: 600;
+  color: #a9a9a9;
+}
+
+.highland-feature-slogan {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.highland-charts-scroll {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: var(--space-md);
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-bottom: 6px;
+  margin-bottom: var(--space-md);
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x mandatory;
+}
+
+.highland-chart-cell {
+  flex: 0 0 auto;
+  width: min(280px, 82vw);
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.highland-chart-label {
+  margin: 0 0 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1c1c1e;
+  text-align: center;
+}
+
+.highland-chart-wrap {
+  height: 220px;
+  width: 100%;
+  max-width: 280px;
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(169, 169, 169, 0.6);
+  background: var(--bg-card);
+  padding: 6px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.highland-chart-wrap canvas {
+  display: block;
+  max-width: 100%;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.highland-desc-block {
+  margin-bottom: var(--space-md);
+  text-align: left;
+}
+
+.highland-desc-line {
+  margin: 0 0 10px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-primary);
+}
+
+.highland-desc-line:last-child {
+  margin-bottom: 0;
+}
+
+.highland-desc-kicker {
+  color: #a9a9a9;
+  font-weight: 800;
+  margin-right: 6px;
+}
+
+.highland-life-heading {
+  margin: 0 0 var(--space-sm);
+  font-size: 16px;
+  font-weight: 800;
+  color: #a9a9a9;
+  text-align: left;
+}
+
+.highland-life-figure {
+  margin: 0;
+}
+
+.highland-life-img-wrap {
+  border-radius: var(--radius-card);
+  overflow: hidden;
+  border: 1px solid rgba(169, 169, 169, 0.45);
+  background: rgba(169, 169, 169, 0.1);
+}
+
+.highland-life-img-wrap--photo {
+  line-height: 0;
+}
+
+.highland-life-photo {
+  width: 100%;
+  height: auto;
+  display: block;
 }
 
 .polar-desc-block {

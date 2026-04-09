@@ -28,12 +28,13 @@
         <p class="title-section-tagline">당신의 지리 루틴을 만들어줄, 또 하나의 지리 학습 도구</p>
         <h1 id="brand-title" class="title-section-brand">어나더 지오엑스(geo-eX)</h1>
         <p class="title-section-series">Exercise to be an expert — world climate master</p>
-        <div class="title-section-emojis" role="group" aria-label="열대, 건조, 온대, 냉대, 한대 기후">
+        <div class="title-section-emojis" role="group" aria-label="열대, 건조, 온대, 냉대, 한대, 고산 기후">
           <span class="title-section-emoji" aria-hidden="true">🌴</span>
           <span class="title-section-emoji" aria-hidden="true">🌵</span>
           <span class="title-section-emoji" aria-hidden="true">🌤️</span>
           <span class="title-section-emoji" aria-hidden="true">🌲</span>
           <span class="title-section-emoji" aria-hidden="true">❄️</span>
+          <span class="title-section-emoji" aria-hidden="true">⛰️</span>
         </div>
       </div>
       <nav class="step-nav" aria-label="학습 단계">
@@ -101,6 +102,13 @@
             <h3 class="climate-card-name">한대</h3>
             <p class="climate-card-desc">
               극고위도의 저온과 눈·얼음의 높은 반사율. ET(툰드라)·EF(빙설) 등 짧거나 없는 무설기가 특징입니다. 카드를 누르면 배로·보스토크 그래프와 인간 생활을 볼 수 있어요.
+            </p>
+          </article>
+          <article class="climate-card" role="listitem" tabindex="0" data-climate="highland">
+            <span class="climate-card-icon" aria-hidden="true">⛰️</span>
+            <h3 class="climate-card-name">고산</h3>
+            <p class="climate-card-desc">
+              위도보다 해발 고도의 영향이 커서 기온이 선선하게 유지됩니다. 적도 근처에서도 ‘상춘 기후’가 나타날 수 있어요. 카드를 누르면 보고타·키토 그래프와 인간 생활을 볼 수 있어요.
             </p>
           </article>
         </div>
@@ -176,6 +184,12 @@
                       <li><strong>250mm 미만</strong> → <span class="step2-code">BW</span> (사막)</li>
                     </ul>
                   </div>
+                  <div class="step2-subblock">
+                    <h5 class="step2-subblock-title">특수</h5>
+                    <ul class="step2-criteria-ul">
+                      <li>고산 기후 지역 → <span class="step2-code">H</span></li>
+                    </ul>
+                  </div>
                 </article>
 
                 <article class="step2-tier">
@@ -202,7 +216,6 @@
                     <h5 class="step2-subblock-title">특수</h5>
                     <ul class="step2-criteria-ul">
                       <li>계절풍의 영향 → <span class="step2-code">m</span></li>
-                      <li>고산 기후 지역 → <span class="step2-code">H</span></li>
                     </ul>
                   </div>
                 </article>
@@ -304,6 +317,17 @@
                         <span class="step2-symbol-line"><span class="step2-code">BS</span>: 연강수 250~500mm</span>
                         <span class="step2-symbol-line"><span class="step2-code">BW</span>: 연강수 250mm 미만</span>
                       </td>
+                    </tr>
+                  </tbody>
+                  <tbody>
+                    <tr>
+                      <th scope="row" class="step2-th-group">특수</th>
+                      <th scope="row">고산 <span class="step2-code">H</span></th>
+                      <td>고산 기후 지역</td>
+                      <td class="step2-td-small step2-td-symbols">
+                        <span class="step2-symbol-line"><span class="step2-code">H</span> 고산(고지) 기후</span>
+                      </td>
+                      <td class="step2-td-small step2-td-symbols">—</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1050,6 +1074,63 @@
           <figcaption class="polar-life-summary">
             모피와 이글루, 썰매와 순록·개, 얼음 위 낚시와 보존 식량이 어우러진 극지·툰드라 지역의 생활 모습입니다.
           </figcaption>
+        </figure>
+      </section>
+    </div>
+  </template>
+
+  <template id="modal-highland-template">
+    <div class="modal-highland-content highland-feature-inner">
+      <header class="highland-feature-head">
+        <span class="highland-feature-icon" aria-hidden="true">⛰️</span>
+        <div class="highland-feature-titles">
+          <h3 class="highland-feature-title">
+            고산 기후 <span class="highland-feature-title-en">(Highland Climate)</span>
+          </h3>
+          <p class="highland-feature-slogan">높이 올라갈수록 시원해져요! 일 년 내내 봄 같은 날씨가 이어집니다.</p>
+        </div>
+      </header>
+
+      <div class="highland-charts-scroll" aria-label="고산 기후 유형별 기후 그래프">
+        <div class="highland-chart-cell">
+          <p class="highland-chart-label">열대 고산(보고타)</p>
+          <div class="highland-chart-wrap">
+            <canvas id="step1-chart-bogota" width="280" height="220" aria-label="보고타 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+        <div class="highland-chart-cell">
+          <p class="highland-chart-label">열대 고산(키토)</p>
+          <div class="highland-chart-wrap">
+            <canvas id="step1-chart-quito" width="280" height="220" aria-label="키토 월별 기온·강수 그래프"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <div class="highland-desc-block">
+        <p class="highland-desc-line">
+          <strong class="highland-desc-kicker">기온</strong>
+          위도가 낮아도(적도 근처) 해발 고도가 높기 때문에 일 년 내내 선선해요. 마치 사계절이 모두 봄이나 가을 같은 &apos;상춘 기후&apos;가 나타납니다.
+        </p>
+        <p class="highland-desc-line">
+          <strong class="highland-desc-kicker">강수</strong>
+          평지보다 비나 눈이 자주 내리지만, 고도에 따라 강수량 차이가 커요. 높은 산의 꼭대기에는 일 년 내내 눈이 쌓여 있기도 하답니다.
+        </p>
+      </div>
+
+      <section class="highland-life" aria-labelledby="modal-highland-life-heading">
+        <h4 id="modal-highland-life-heading" class="highland-life-heading">인간 생활</h4>
+        <figure class="highland-life-figure">
+          <div class="highland-life-img-wrap highland-life-img-wrap--photo">
+            <img
+              class="highland-life-photo"
+              src="images/highland_climate_lifestyle.png"
+              alt="고산 기후 생활: 계단식 밭과 라마, 고산 가옥이 함께 있는 산지 풍경"
+              width="1024"
+              height="558"
+              loading="lazy"
+              decoding="async"
+            />
+          </div>
         </figure>
       </section>
     </div>
